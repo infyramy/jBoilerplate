@@ -1,0 +1,55 @@
+{
+  "name": "Admin Dashboard",
+  "description": "Extended admin dashboard with analytics, user management, and settings",
+  "version": "1.0.0",
+  "screenshot": "preview.png",
+  "features": [
+    "Vue 3",
+    "TypeScript",
+    "Shadcn UI",
+    "i18n",
+    "Pinia State Management",
+    "Vue Router",
+    "Authentication System",
+    "Dark Mode",
+    "Form Validation",
+    "Advanced Admin Dashboard",
+    "Analytics Dashboard",
+    "User Management",
+    "Role-based Access Control",
+    "API Integration",
+    "Settings Management"
+  ],
+  "structure": {
+    "ignore": [
+      "node_modules",
+      ".git",
+      "dist",
+      "templates",
+      "src/cli"
+    ],
+    "rename": {
+      ".env.example": ".env"
+    }
+  },
+  "dependencies": {
+    "required": [
+      "vue",
+      "vue-router",
+      "pinia",
+      "vue-i18n",
+      "@vueuse/core",
+      "ofetch",
+      "vue-sonner",
+      "drizzle-orm"
+    ],
+    "optional": [
+      "chart.js",
+      "vue-chartjs"
+    ]
+  },
+  "postInstall": [
+    "npm install",
+    "npm run build"
+  ]
+} 

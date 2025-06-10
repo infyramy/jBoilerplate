@@ -1,0 +1,196 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+---
+title: JBoilerplate Project Rules
+description: |
+  Canonical rules for the jBoilerplate Vue 3 + TS + Shadcn UI stack.
+  Applies to all code under /src and configuration at project root.
+globs:
+  - "src/**/*.{vue,ts,tsx,js,mjs,cjs}"
+  - "*.config.{js,ts,mjs,cjs}"
+tags: [vue3, typescript, tailwind, shadcn, pinia, drizzle, boilerplate]
+priority: 100            # higher = more likely to be included automatically
+---
+
+# 🎯 Project Purpose
+jBoilerplate is a **Vue 3 + TypeScript** starter with full-stack features:
+auth, RBAC, i18n, Pinia state, Drizzle ORM, Tailwind/Shadcn UI, Umami
+analytics, Plunk email, Docker/Vercel deploy.
+
+If you are generating, refactoring, or reviewing code, respect every rule
+below unless the user explicitly overrides it in the same request.
+
+---
+
+## 1. Architectural Principles
+1. **Separation of concerns**  
+   *Composables for logic*, *components for UI*, *stores for state*,
+   *services for external calls*, *lib/db* for Drizzle schema & queries,
+   *layouts* for page chrome.
+2. **Type safety first** – no `any`, prefer explicit generic params, keep
+   `strict: true` in `tsconfig.json`.  
+3. **Convention over configuration** – follow existing folder names,
+   import aliases (`@/`), and file naming (`kebab-case.vue`,
+   `camelCase.ts`).
+4. **Scalable internationalisation** – never hard-code user-visible text.
+   Use `t('namespace.key')` from Vue I18n.
+
+---
+
+## 2. Coding Style
+### 2.1 TypeScript & Vue SFCs
+- `<script setup lang="ts">` for all `.vue` files.
+- Always export a *named* `defineProps` & `defineEmits` schema.
+- Use **PascalCase** for component names, **camelCase** for composables,
+  **UPPER_SNAKE_CASE** for constants.
+
+### 2.2 ESLint & Prettier
+- Rely on `@typescript-eslint` & `plugin:vue/vue3-recommended`.
+- Ensure files format with Prettier on save (80 col soft wrap).
+
+### 2.3 Tailwind CSS
+- Utility-first; avoid bespoke CSS except for rare keyframes.
+- Custom theme edits only inside `tailwind.config.js::theme.extend`.
+
+---
+
+## 3. Component Rules
+1. Prefer Shadcn primitives over writing new ones; extend only by
+   composition.
+2. Props surface area: ≤ 7 props; move complex configs to a single object
+   prop with a documented interface in `/types`.
+3. Keep atomic components under `components/ui/*`, feature-level
+   composites under `components/{feature}/`.
+
+---
+
+## 4. State Management (Pinia)
+- One store per domain (`useAuthStore`, `useNavStore`, etc.).
+- All async actions `try/catch`; surface errors via a composable toast.
+- Persist auth state using `pinia-plugin-persistedstate` (already wired).
+
+---
+
+## 5. Routing
+```ts
+// Example pattern – REUSE verbatim
+{
+  path: '/admin/dashboard',
+  component: () => import('@/pages/admin/dashboard/index.vue'),
+  meta: {
+    requiresAuth: true,
+    roles: ['admin'],
+    layout: 'dashboard',
+    title: 'Admin Dashboard',
+  },
+}
+```
+- All routes belong to a module file in `router/routes/`.
+- Non-auth pages must set `requiresAuth: false` explicitly.
+
+---
+
+## 6. Service Layer & API
+- Centralised Axios instance in `services/api.ts`.
+- Do **NOT** call `fetch` directly inside components; delegate to service.
+- Group endpoints by entity (e.g., `UserService`, `ProductService`).
+
+---
+
+## 7. Database (Drizzle)
+- Schemas live in `lib/db/schema.ts`; keep 1 table per exported const.
+- Use ULIDs/UUIDs, never auto-increment ints.
+- All migrations reversible; name like `2025_06_09_create_products`.
+
+---
+
+## 8. Security & Secrets
+- Never commit real credentials.  
+  Stub in `.env.example`; access via `import.meta.env.*`.
+- Hash passwords with Argon2 in backend; frontend **never** hashes.
+
+---
+
+## 9. Testing
+- Unit: Vitest (`*.spec.ts`) in same folder `__tests__` or alongside file.
+- E2E: Cypress under `/tests/e2e`.
+- Minimum coverage: lines ≥ 80 %.
+
+---
+
+## 10. Documentation & Comments
+- Prefer self-explanatory code over comments.
+- File-level docblock: **why**, not **what**.
+- Keep developer-facing docs in `/docs` or MD-files near code.
+
+---
+
+## 11. Commit & PR Workflow
+- Use Conventional Commits:
+  `feat(scope): description`, `fix`, `chore`, `docs`, `refactor`,
+  `test`, `perf`.
+- One logical change per PR; include BEFORE/AFTER screenshots for UI.
+
+---
+
+## 12. Generation Directives for Cursor AI
+When the AI creates or edits code in this project it **must**:
+
+1. Honour sections 1–11 above.
+2. Match existing import aliases and relative paths.
+3. Autocomplete imports with explicit file paths (no barrel imports unless
+   `/index.ts` already exists).
+4. Insert TODO comments in English with `TODO(username):` prefix.
+5. Generate code that passes `npm run type-check` & `npm run lint`.
+6. For UI outputs, use existing Shadcn components; if missing,
+   scaffold in `components/ui/` and update Tailwind theme accordingly.
+7. For new env vars, update `.env.example` plus list key purpose in PR
+   description.
+
+---
+
+## 13. Forbidden Patterns
+- `any`, `as any`, double-negatives (`!!` in templates).
+- Direct DOM access (`document.querySelector`) inside Vue components.
+- Mixing data and presentation in same file when avoidable.
+
+---
+
+## 14. Example Usage Snippets
+### 14.1 Auth Store Access
+```ts
+import { useAuthStore } from '@/stores/auth';
+const { user, isAuthenticated } = storeToRefs(useAuthStore());
+```
+
+### 14.2 Composable Skeleton
+```ts
+export function useFeatureX() {
+  const state = ref<number>(0);
+  function increment() { state.value++; }
+  return { state, increment };
+}
+```
+
+### 14.3 Drizzle Query
+```ts
+import { db } from '@/lib/db';
+import { products } from '@/lib/db/schema';
+export async function getProducts(limit = 10) {
+  return db.select().from(products).limit(limit);
+}
+```
+
+---
+
+## 15. Future TODOs
+- [ ] Set up Husky pre-commit hooks.
+- [ ] Integrate Storybook for component docs.
+- [ ] Add dark-mode theme tokens.
+
+---
+
+**End of JBoilerplate Project Rules**

@@ -1,0 +1,18 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-3100}:80"
+    volumes:
+      - web_data:/usr/share/nginx/html
+    environment:
+      - API_URL=${API_URL:-http://localhost:3002}
+    stop_grace_period: 1m
+    stop_signal: SIGTERM
+
+volumes:
+  web_data:
+    driver: local 

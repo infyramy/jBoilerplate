@@ -1,0 +1,49 @@
+{
+  "name": "Default",
+  "description": "Complete Vue 3 application with TypeScript, Shadcn UI, i18n, and basic admin pages",
+  "version": "1.0.0",
+  "screenshot": "preview.png",
+  "features": [
+    "Vue 3",
+    "TypeScript",
+    "Shadcn UI",
+    "i18n",
+    "Pinia State Management",
+    "Vue Router",
+    "Authentication System",
+    "Dark Mode",
+    "Form Validation",
+    "Admin Dashboard",
+    "API Integration"
+  ],
+  "structure": {
+    "ignore": [
+      "node_modules",
+      ".git",
+      "dist",
+      "templates",
+      "src/cli"
+    ],
+    "rename": {
+      ".env.example": ".env"
+    }
+  },
+  "dependencies": {
+    "required": [
+      "vue",
+      "vue-router",
+      "pinia",
+      "vue-i18n",
+      "@vueuse/core",
+      "ofetch"
+    ],
+    "optional": [
+      "vue-sonner",
+      "drizzle-orm"
+    ]
+  },
+  "postInstall": [
+    "npm install",
+    "npm run build"
+  ]
+} 

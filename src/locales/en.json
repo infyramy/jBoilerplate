@@ -1,0 +1,65 @@
+{
+  "common": {
+    "welcome": "Welcome",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "actions": "Actions",
+    "search": "Search",
+    "filter": "Filter",
+    "close": "Close",
+    "open": "Open",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "logout": "Logout",
+    "login": "Login",
+    "register": "Register",
+    "profile": "Profile",
+    "settings": "Settings",
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "yes": "Yes",
+    "no": "No",
+    "language": "Language"
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "forgotPassword": "Forgot Password",
+    "resetPassword": "Reset Password",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "rememberMe": "Remember Me",
+    "loginSuccessful": "Login Successful",
+    "logoutSuccessful": "Logout Successful",
+    "incorrectCredentials": "Incorrect email or password",
+    "accountCreated": "Account created successfully"
+  },
+  "validation": {
+    "required": "{field} is required",
+    "email": "Please enter a valid email address",
+    "minLength": "{field} must be at least {min} characters",
+    "maxLength": "{field} must not exceed {max} characters",
+    "passwordMatch": "Passwords do not match",
+    "invalidFormat": "Invalid {field} format"
+  },
+  "notifications": {
+    "newMessage": "You have a new message",
+    "newNotification": "You have a new notification"
+  },
+  "errors": {
+    "somethingWentWrong": "Something went wrong",
+    "pageNotFound": "Page not found",
+    "serverError": "Server error",
+    "unauthorized": "Unauthorized",
+    "forbidden": "Forbidden",
+    "offline": "You are offline"
+  }
+} 

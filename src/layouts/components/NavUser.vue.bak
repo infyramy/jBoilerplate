@@ -1,0 +1,382 @@
+<script setup lang="ts">
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuPortal,
+} from "@/components/ui/dropdown-menu";
+import {
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar,
+} from "@/components/ui/sidebar";
+import { 
+  ChevronsUpDown, 
+  LogOut, 
+  User, 
+  MoonStar, 
+  Sun, 
+  MonitorSmartphone,
+  HelpCircle,
+  BookOpen,
+  Headset,
+  Languages,
+  Bell,
+  Settings
+} from "lucide-vue-next";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { useAuthStore } from "@/stores/auth";
+import { useNotificationStore } from "@/stores/notification";
+import { useRouter } from "vue-router";
+import { ref, computed } from "vue";
+import { useI18n } from 'vue-i18n';
+import { useColorMode } from "@vueuse/core";
+
+const authStore = useAuthStore();
+const notificationStore = useNotificationStore();
+const router = useRouter();
+const { isMobile } = useSidebar();
+const isLogoutDialogOpen = ref(false);
+const isDropdownOpen = ref(false);
+const mode = useColorMode();
+const { locale, availableLocales } = useI18n();
+
+// Themes
+const themeLabels = {
+  'light': 'Light',
+  'dark': 'Dark',
+  'auto': 'System'
+};
+
+const themeIcons = {
+  'light': Sun,
+  'dark': MoonStar,
+  'auto': MonitorSmartphone
+};
+
+// Languages
+const languageOptions = computed(() => {
+  return availableLocales.value.map((code: string) => {
+    const langMap: Record<string, { name: string, flag: string }> = {
+      'en': { name: 'English', flag: '🇺🇸' },
+      'es': { name: 'Spanish', flag: '🇪🇸' },
+    };
+    return {
+      code,
+      name: langMap[code]?.name || code,
+      flag: langMap[code]?.flag || '🌐',
+    };
+  });
+});
+
+function toggleTheme(theme: 'light' | 'dark' | 'auto') {
+  mode.value = theme;
+}
+
+function changeLanguage(langCode: string) {
+  if (availableLocales.value.includes(langCode)) {
+    locale.value = langCode;
+    localStorage.setItem('userLanguage', langCode);
+  }
+}
+
+function showLogoutConfirmation() {
+  isLogoutDialogOpen.value = true;
+  // Close the dropdown when opening the dialog
+  isDropdownOpen.value = false;
+}
+
+function handleLogout() {
+  authStore.logout();
+  isLogoutDialogOpen.value = false;
+}
+
+function closeLogoutDialog() {
+  isLogoutDialogOpen.value = false;
+}
+
+function navigateToSupport() {
+  router.push("/support");
+}
+
+function navigateToSettings() {
+  router.push("/setting");
+}
+
+function navigateToNotifications() {
+  router.push("/notifications");
+}
+
+function navigateToDocumentation() {
+  router.push("/documentation");
+}
+
+function navigateToProfile() {
+  router.push("/profile");
+}
+
+function navigateToAccount() {
+  router.push("/account");
+}
+
+// Format time ago for notifications
+function formatTimeAgo(date: Date) {
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (diffInSeconds < 60) return "just now";
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+  return `${Math.floor(diffInSeconds / 86400)}d ago`;
+}
+</script>
+<template>
+  <div class="flex flex-col gap-2 w-full">
+    <div class="flex gap-2 w-full">
+      <!-- Notifications Button -->
+      <DropdownMenu>
+        <DropdownMenuTrigger as-child>
+          <Button variant="secondary" class="justify-center relative">
+            <Bell class="h-4 w-4" />
+            <span
+              v-if="notificationStore.unreadCount > 0"
+              class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center"
+            >
+              {{ notificationStore.unreadCount }}
+            </span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent class="w-80">
+          <div class="flex items-center justify-between px-2 py-1.5">
+            <span class="text-sm font-semibold">Notifications</span>
+            <Button
+              v-if="notificationStore.unreadCount > 0"
+              variant="ghost"
+              size="sm"
+              class="h-6 text-xs"
+              @click="notificationStore.markAllAsRead"
+            >
+              Mark all as read
+            </Button>
+          </div>
+          <DropdownMenuSeparator />
+          <div class="max-h-96 overflow-y-auto">
+            <template v-if="notificationStore.latestNotifications.length > 0">
+              <DropdownMenuItem
+                v-for="notification in notificationStore.latestNotifications"
+                :key="notification.id"
+                :class="{ 'opacity-60': notification.read }"
+                @click="notificationStore.markAsRead(notification.id)"
+              >
+                <div class="flex flex-col gap-1">
+                  <div class="flex items-center gap-2">
+                    <component 
+                      :is="
+                        notification.type === 'info' ? 'Info' :
+                        notification.type === 'success' ? 'CheckCircle' :
+                        notification.type === 'warning' ? 'AlertTriangle' :
+                        'XCircle'
+                      "
+                      class="h-4 w-4"
+                      :class="{
+                        'text-blue-500': notification.type === 'info',
+                        'text-green-500': notification.type === 'success',
+                        'text-yellow-500': notification.type === 'warning',
+                        'text-red-500': notification.type === 'error'
+                      }"
+                    />
+                    <span class="font-medium">{{ notification.title }}</span>
+                  </div>
+                  <p class="text-xs text-muted-foreground">
+                    {{ notification.message }}
+                  </p>
+                  <span class="text-xs text-muted-foreground">
+                    {{ formatTimeAgo(notification.timestamp) }}
+                  </span>
+                </div>
+              </DropdownMenuItem>
+            </template>
+            <div
+              v-else
+              class="px-2 py-4 text-center text-sm text-muted-foreground"
+            >
+              No notifications
+            </div>
+          </div>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem @click="router.push('/notifications')">
+            <Bell class="h-4 w-4 mr-2" />
+            <span>View all notifications</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <!-- Theme Toggle Button -->
+      <DropdownMenu>
+        <DropdownMenuTrigger as-child>
+          <Button variant="secondary" class="justify-center">
+            <component :is="themeIcons[mode.value as keyof typeof themeIcons]" class="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem @click="toggleTheme('light')">
+            <Sun class="h-4 w-4 mr-2" />
+            <span>Light</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem @click="toggleTheme('dark')">
+            <MoonStar class="h-4 w-4 mr-2" />
+            <span>Dark</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem @click="toggleTheme('auto')">
+            <MonitorSmartphone class="h-4 w-4 mr-2" />
+            <span>System</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+
+    <!-- User Menu -->
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <DropdownMenu v-model:open="isDropdownOpen">
+          <DropdownMenuTrigger as-child>
+            <SidebarMenuButton
+              size="lg"
+              class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+            >
+              <Avatar class="h-8 w-8 rounded-lg">
+                <AvatarImage
+                  :src="
+                    authStore.user?.avatar ? String(authStore.user.avatar) : ''
+                  "
+                  :alt="
+                    authStore.user?.fullname
+                      ? String(authStore.user.fullname)
+                      : ''
+                  "
+                />
+                <AvatarFallback>
+                  {{ authStore.user?.fullname?.charAt(0) || "U" }}
+                </AvatarFallback>
+              </Avatar>
+              <div class="ml-3 flex-1 min-w-0 flex flex-col items-start justify-center">
+                <span class="text-sm font-medium truncate">
+                  {{ authStore.user?.fullname || "User" }}
+                </span>
+                <span class="text-xs text-muted-foreground truncate">
+                  {{ authStore.user?.email || "user@example.com" }}
+                </span>
+              </div>
+              <ChevronsUpDown
+                class="h-4 w-4 text-muted-foreground shrink-0 transition-transform duration-200 group-data-[state=open]/menu-item:rotate-180"
+              />
+            </SidebarMenuButton>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent class="w-64" align="start">
+            <DropdownMenuLabel class="text-xs uppercase tracking-wider text-muted-foreground">
+              Account
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuItem @click="navigateToProfile">
+                <User class="h-4 w-4 mr-2" />
+                Profile
+              </DropdownMenuItem>
+              
+              <DropdownMenuItem @click="navigateToSettings">
+                <Settings class="h-4 w-4 mr-2" />
+                Settings
+              </DropdownMenuItem>
+
+              <!-- Language Menu -->
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <Languages class="h-4 w-4 mr-2" />
+                  <span>Language</span>
+                </DropdownMenuSubTrigger>
+                <DropdownMenuPortal>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuItem 
+                      v-for="lang in languageOptions" 
+                      :key="lang.code"
+                      @click="changeLanguage(lang.code)"
+                      :class="{ 'bg-accent': locale === lang.code }"
+                    >
+                      <span class="mr-2">{{ lang.flag }}</span>
+                      <span>{{ lang.name }}</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuPortal>
+              </DropdownMenuSub>
+
+              <!-- Help Menu -->
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <HelpCircle class="h-4 w-4 mr-2" />
+                  <span>Help</span>
+                </DropdownMenuSubTrigger>
+                <DropdownMenuPortal>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuItem @click="navigateToDocumentation">
+                      <BookOpen class="h-4 w-4 mr-2" />
+                      <span>Documentation</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem @click="navigateToSupport">
+                      <Headset class="h-4 w-4 mr-2" />
+                      <span>Support</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuPortal>
+              </DropdownMenuSub>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem @click="showLogoutConfirmation">
+              <LogOut class="h-4 w-4 mr-2" />
+              <span>Log out</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SidebarMenuItem>
+    </SidebarMenu>
+  </div>
+
+  <!-- Logout confirmation dialog (outside of dropdown to avoid interaction issues) -->
+  <Dialog v-model:open="isLogoutDialogOpen">
+    <DialogContent class="sm:max-w-[425px]">
+      <DialogHeader>
+        <DialogTitle>Confirm Logout</DialogTitle>
+        <DialogDescription>
+          You're about to sign out of your account. Any unsaved changes may be
+          lost. Are you sure you want to continue?
+        </DialogDescription>
+      </DialogHeader>
+      <DialogFooter class="mt-6 flex justify-end gap-3">
+        <Button variant="outline" @click="closeLogoutDialog" class="px-5"
+          >Cancel</Button
+        >
+        <Button variant="destructive" @click="handleLogout" class="px-5">
+          <LogOut class="mr-2 h-4 w-4" />
+          Sign Out
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
+</template>

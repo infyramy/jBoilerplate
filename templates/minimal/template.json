@@ -1,0 +1,41 @@
+{
+  "name": "Minimal",
+  "description": "Lightweight Vue 3 starter with essential features only",
+  "version": "1.0.0",
+  "screenshot": "preview.png",
+  "features": [
+    "Vue 3",
+    "TypeScript",
+    "Shadcn UI (Core Components Only)",
+    "Pinia State Management",
+    "Vue Router",
+    "Dark Mode"
+  ],
+  "structure": {
+    "ignore": [
+      "node_modules",
+      ".git",
+      "dist",
+      "templates",
+      "src/cli",
+      "src/pages/admin",
+      "src/pages/superadmin"
+    ],
+    "rename": {
+      ".env.example": ".env"
+    }
+  },
+  "dependencies": {
+    "required": [
+      "vue",
+      "vue-router",
+      "pinia",
+      "@vueuse/core"
+    ],
+    "optional": []
+  },
+  "postInstall": [
+    "npm install",
+    "npm run build"
+  ]
+} 
