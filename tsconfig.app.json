@@ -25,7 +25,8 @@
     },
     "module": "esnext",
     "moduleResolution": "bundler",
-    "target": "es2020"
+    "target": "es2020",
+    "composite": true
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "src/**/*.json"],
   "exclude": ["node_modules"]

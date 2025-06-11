@@ -140,27 +140,31 @@ export default defineConfig({
     manifest: true,
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor': ['vue', 'vue-router', 'pinia'],
-          'ui': [
-            '@/components/ui/button/Button.vue',
-            '@/components/ui/input/Input.vue',
-            '@/components/ui/select/Select.vue',
-            '@/components/ui/dialog/Dialog.vue',
-            '@/components/ui/data-table/DataTable.vue',
-          ],
-          'charts': [
-            '@/components/ui/chart/Chart.vue', 
-            '@/components/ui/chart-line/ChartLine.vue',
-            '@/components/ui/chart-bar/ChartBar.vue',
-            '@/components/ui/chart-donut/ChartDonut.vue',
-            '@/components/ui/chart-area/ChartArea.vue'
-          ],
-          'admin': ['/admin/'],
-          'user': ['/user/'],
-          'superadmin': ['/superadmin/'],
-          'manager': ['/manager/'],
-          'auth': ['/login', '/register', '/forgot-password'],
+        manualChunks: (id) => {
+          if (id.includes('node_modules')) {
+            if (id.includes('vue') || id.includes('pinia')) {
+              return 'vendor';
+            }
+            return 'deps';
+          }
+          if (id.includes('components/ui')) {
+            return 'ui';
+          }
+          if (id.includes('/admin/')) {
+            return 'admin';
+          }
+          if (id.includes('/user/')) {
+            return 'user';
+          }
+          if (id.includes('/superadmin/')) {
+            return 'superadmin';
+          }
+          if (id.includes('/manager/')) {
+            return 'manager';
+          }
+          if (id.includes('/login') || id.includes('/register') || id.includes('/forgot-password')) {
+            return 'auth';
+          }
         },
         chunkFileNames: 'assets/js/[name]-[hash].js',
         entryFileNames: 'assets/js/[name]-[hash].js',

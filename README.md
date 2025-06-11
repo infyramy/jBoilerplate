@@ -23,22 +23,88 @@ A modern Vue 3 boilerplate with TypeScript, Shadcn UI components, and comprehens
 
 ## Quick Start
 
-### Using the CLI
+### Prerequisites
+
+1. Install pnpm (if you haven't already):
+   ```bash
+   npm install -g pnpm
+   ```
+
+### Clone and Setup
 
 ```bash
-# Install with npx
-npx jboilerplate create my-project
+# Clone the repository
+git clone https://github.com/yourusername/jboilerplate.git
+cd jboilerplate
 
-# Or install globally
-npm install -g jboilerplate
-jboilerplate create my-project
+# One command setup (installs dependencies and builds the project)
+pnpm setup
 ```
 
-### Available Templates
+## Development
 
-- **Default** - Complete application with all features
-- **Admin Dashboard** - Extended admin interface with analytics
-- **Minimal** - Lightweight starter with essential features
+```bash
+# Install dependencies
+pnpm install
+
+# Start development server
+pnpm dev
+
+# Build for production
+pnpm build
+
+# Preview production build
+pnpm preview
+```
+
+### Available Scripts
+
+- `pnpm setup` - Initial project setup after cloning
+- `pnpm dev` - Start development server
+- `pnpm build` - Build for production
+- `pnpm preview` - Preview production build
+- `pnpm lint` - Lint code
+- `pnpm test` - Run tests
+- `pnpm test:watch` - Run tests in watch mode
+
+## Configuration
+
+### TypeScript Configuration
+
+The project uses a multi-tsconfig setup for better type checking and build performance:
+
+- `tsconfig.json` - Base configuration file
+- `tsconfig.app.json` - Application-specific configuration
+- `tsconfig.node.json` - Node.js/build tools configuration
+
+Key TypeScript features enabled:
+- Project references for faster builds
+- Strict type checking
+- Module resolution with path aliases
+- Declaration file generation
+- Import extensions support
+
+Important settings in `tsconfig.node.json`:
+```json
+{
+  "compilerOptions": {
+    "composite": true,
+    "emitDeclarationOnly": true,
+    "allowImportingTsExtensions": true
+  }
+}
+```
+
+### Environment Variables
+
+Create a `.env` file based on `.env.example`:
+
+```
+VITE_API_URL=http://localhost:3000/api
+VITE_PLUNK_API_KEY=your_plunk_api_key
+VITE_UMAMI_WEBSITE_ID=your_umami_id
+VITE_UMAMI_URL=https://analytics.example.com
+```
 
 ## Project Structure
 
@@ -67,44 +133,6 @@ my-project/
 ├── vite.config.ts          # Vite configuration
 └── tsconfig.json           # TypeScript configuration
 ```
-
-## Development
-
-```bash
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
-```
-
-## Configuration
-
-### Environment Variables
-
-Create a `.env` file based on `.env.example`:
-
-```
-VITE_API_URL=http://localhost:3000/api
-VITE_PLUNK_API_KEY=your_plunk_api_key
-VITE_UMAMI_WEBSITE_ID=your_umami_id
-VITE_UMAMI_URL=https://analytics.example.com
-```
-
-### Available Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Lint code
-- `npm run test` - Run tests
-- `npm run test:watch` - Run tests in watch mode
 
 ## Features
 
