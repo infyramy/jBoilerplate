@@ -4,3 +4,7 @@ node_modules
 .env.development.local
 .env.test.local
 .env.production.local
+SuperAdmin-Implementation-Plan.md
+SuperAdmin-Technical-Implementation.md
+SuperAdmin-UI-Component-Design.md
+docs
