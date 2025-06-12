@@ -151,58 +151,9 @@
           </div>
         </CardContent>
       </Card>
-      <Card class="lg:col-span-3">
-        <CardHeader>
-          <CardTitle>System Status</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div class="space-y-4">
-            <div class="flex items-center justify-between">
-              <div class="space-y-1">
-                <p class="text-sm font-medium">API Service</p>
-                <div class="flex items-center">
-                  <div class="h-2 w-2 rounded-full bg-green-500 mr-2"></div>
-                  <p class="text-xs text-muted-foreground">Operational</p>
-                </div>
-              </div>
-              <Progress :value="100" class="w-40" />
-            </div>
-            <Separator />
-            <div class="flex items-center justify-between">
-              <div class="space-y-1">
-                <p class="text-sm font-medium">Database</p>
-                <div class="flex items-center">
-                  <div class="h-2 w-2 rounded-full bg-green-500 mr-2"></div>
-                  <p class="text-xs text-muted-foreground">Operational</p>
-                </div>
-              </div>
-              <Progress :value="92" class="w-40" />
-            </div>
-            <Separator />
-            <div class="flex items-center justify-between">
-              <div class="space-y-1">
-                <p class="text-sm font-medium">Storage Service</p>
-                <div class="flex items-center">
-                  <div class="h-2 w-2 rounded-full bg-green-500 mr-2"></div>
-                  <p class="text-xs text-muted-foreground">Operational</p>
-                </div>
-              </div>
-              <Progress :value="95" class="w-40" />
-            </div>
-            <Separator />
-            <div class="flex items-center justify-between">
-              <div class="space-y-1">
-                <p class="text-sm font-medium">Email Service</p>
-                <div class="flex items-center">
-                  <div class="h-2 w-2 rounded-full bg-amber-500 mr-2"></div>
-                  <p class="text-xs text-muted-foreground">Degraded</p>
-                </div>
-              </div>
-              <Progress :value="78" class="w-40" />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <div class="lg:col-span-3">
+        <SystemHealthCheck />
+      </div>
     </div>
   </div>
 </template>
@@ -212,6 +163,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
+import SystemHealthCheck from "@/components/superadmin/SystemHealthCheck.vue";
 import {
   Download,
   RefreshCw,
