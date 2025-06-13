@@ -1,3 +1,3 @@
-import { PasswordStrength } from './PasswordStrength';
+import PasswordStrength from './PasswordStrength.vue';
 
 export { PasswordStrength }; 

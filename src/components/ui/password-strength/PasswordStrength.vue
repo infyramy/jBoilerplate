@@ -68,5 +68,7 @@ const strengthMessages: Record<StrengthLevel, string> = {
 </script>
 
 <script lang="ts">
-export const PasswordStrength = {};
+export default {
+  name: 'PasswordStrength'
+};
 </script> 

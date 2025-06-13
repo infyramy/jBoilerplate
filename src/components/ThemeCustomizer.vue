@@ -58,6 +58,7 @@ const colorSchemes = [
   { name: 'blue', value: 'blue', hsl: '221.2 83.2% 53.3%' },
   { name: 'yellow', value: 'yellow', hsl: '47.9 95.8% 53.1%' },
   { name: 'violet', value: 'violet', hsl: '262.1 83.3% 57.8%' },
+  { name: 'claude', value: 'claude', hsl: '35 68.0412% 38.0392%' },
 ];
 
 // Available border radius options
@@ -85,21 +86,33 @@ const currentThemeMode = computed(() => colorMode.value);
 function applyColorScheme(color: string) {
   const root = document.documentElement;
   
-  // Only update if the color scheme has changed
-  if (currentColorScheme.value !== color) {
+  // Only update if the color scheme has changed or we're re-applying the same theme
+  if (currentColorScheme.value !== color || localStorage.getItem('theme-color') === color) {
     // Save the selection to localStorage
     localStorage.setItem('theme-color', color);
     currentColorScheme.value = color;
     
-    // Here we would normally update CSS variables for the color scheme
-    // Since we're using CSS variables, we need to update CSS variables at the root level
-    // For a simple demo, let's just update a data attribute that can be used in CSS
+    // Reset any previously set inline styles to ensure clean theme application
+    root.style.removeProperty('--primary');
+    root.style.removeProperty('--background');
+    root.style.removeProperty('--foreground');
+    root.style.removeProperty('--card');
+    root.style.removeProperty('--card-foreground');
+    root.style.removeProperty('--border');
+    root.style.removeProperty('--input');
+    root.style.removeProperty('--ring');
+    
+    // Set the data attribute for the color scheme
+    // This will apply all CSS variables defined in theme-customizer.css
     root.setAttribute('data-color-scheme', color);
     
     // Generate CSS based on the color scheme
+    // This handles any special cases and ensures all necessary CSS variables are set
     generateColorSchemeCSS(color);
     
-    toast.success(`Color scheme changed to ${color}`);
+    if (color !== currentColorScheme.value) {
+      toast.success(`Color scheme changed to ${color}`);
+    }
   }
 }
 
@@ -123,26 +136,72 @@ function applyRadius(radius: string) {
 // Apply theme mode (light/dark/system)
 function applyThemeMode(mode: 'light' | 'dark' | 'auto') {
   colorMode.value = mode as any; // Cast to any to avoid type issues with vueuse
-  document.documentElement.classList.toggle('dark', mode === 'dark');
+  
+  // Apply dark class directly
+  const isDarkMode = mode === 'dark' || (mode === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  if (isDarkMode) {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
+  
   localStorage.setItem('theme', mode);
+  
+  // Re-apply current theme to update for dark/light mode
+  const currentTheme = localStorage.getItem('theme-color') || 'zinc';
+  applyColorScheme(currentTheme);
   
   toast.success(`Theme mode changed to ${mode}`);
 }
 
+// Special function to apply the Claude theme comprehensively
+function applyClaudeTheme() {
+  const root = document.documentElement;
+  const isDark = root.classList.contains('dark');
+  
+  // Clear any inline styles first
+  root.style.removeProperty('--primary');
+  root.style.removeProperty('--background');
+  root.style.removeProperty('--foreground');
+  
+  // Set data attribute for Claude theme
+  root.setAttribute('data-color-scheme', 'claude');
+  
+  // Set primary color based on light/dark mode
+  if (isDark) {
+    root.style.setProperty('--primary', '14.8052 74.7573% 59.6078%');
+  } else {
+    root.style.setProperty('--primary', '35 68.0412% 38.0392%');
+  }
+  
+  // Update font settings
+  document.body.style.fontFamily = 'Geist, sans-serif';
+  document.body.style.letterSpacing = '-0.01em';
+}
+
 // Generate CSS for a color scheme (simplified implementation)
 function generateColorSchemeCSS(color: string) {
-  // This is a simplified version
-  // In a real implementation, you would generate all required HSL values
-  // for primary, secondary, background, foreground, etc.
-  
-  // For now, we're just showing the approach
   const selectedColor = colorSchemes.find(c => c.value === color);
   if (!selectedColor) return;
   
   const root = document.documentElement;
   
-  // Update primary color (simplified)
-  root.style.setProperty('--primary', selectedColor.hsl);
+  // Always clear any directly set CSS variables first
+  root.style.removeProperty('--primary');
+  
+  // Set the data attribute which will apply all CSS variables from theme-customizer.css
+  root.setAttribute('data-color-scheme', color);
+  
+  // For Claude theme specifically, we need to apply comprehensive changes
+  if (color === 'claude') {
+    applyClaudeTheme();
+  } else {
+    // Reset font settings (use default theme fonts)
+    document.body.style.fontFamily = '';
+    document.body.style.letterSpacing = '';
+    // For other themes, set primary color directly
+    root.style.setProperty('--primary', selectedColor.hsl);
+  }
 }
 
 // Reset all theme settings to defaults
@@ -155,10 +214,32 @@ function resetTheme() {
 
 // Initialize theme settings on mount
 onMounted(() => {
+  const root = document.documentElement;
+  
   // Apply saved color scheme
   const savedColor = localStorage.getItem('theme-color');
   if (savedColor) {
-    applyColorScheme(savedColor);
+    // Apply dark/light mode first
+    const mode = localStorage.getItem('theme') || 'light';
+    if (mode === 'dark' || (mode === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    
+    // Set the data attribute first
+    root.setAttribute('data-color-scheme', savedColor);
+    
+    // Special handling for Claude theme
+    if (savedColor === 'claude') {
+      applyClaudeTheme();
+    } else {
+      // Then apply the color scheme which will handle special cases
+      applyColorScheme(savedColor);
+    }
+  } else {
+    // Default to zinc if no theme is saved
+    applyColorScheme('zinc');
   }
   
   // Apply saved radius
