@@ -1,46 +1,105 @@
-import { drizzle } from 'drizzle-orm/node-postgres';
-import { Pool } from 'pg';
+import knex, { Knex } from 'knex';
 import { configService } from '@/services/config';
-import * as schema from './schema';
 
 // Get database configuration from config service
-const getDbConfig = () => {
+const getDbConfig = (): Knex.Config => {
   const env = configService.environment;
+  const dbClient = configService.database.client || 'mysql';
   
-  const configs = {
+  const configs: Record<string, Knex.Config> = {
     development: {
-      host: configService.database.host,
-      port: configService.database.port,
-      user: configService.database.user,
-      password: configService.database.password,
-      database: configService.database.name,
+      client: dbClient,
+      connection: {
+        host: configService.database.host,
+        port: configService.database.port,
+        user: configService.database.user,
+        password: configService.database.password,
+        database: configService.database.name,
+      },
+      migrations: {
+        directory: './migrations',
+        tableName: 'knex_migrations',
+      },
+      seeds: {
+        directory: './seeds',
+      },
+      pool: {
+        min: 2,
+        max: 10,
+      },
+      // MySQL specific options
+      ...(dbClient === 'mysql' ? {
+        connection: {
+          host: configService.database.host,
+          port: configService.database.port,
+          user: configService.database.user,
+          password: configService.database.password,
+          database: configService.database.name,
+          charset: 'utf8mb4',
+        },
+      } : {}),
     },
     staging: {
-      host: configService.database.host,
-      port: configService.database.port,
-      user: configService.database.user,
-      password: configService.database.password,
-      database: configService.database.name || 'jboilerplate_staging',
-      ssl: { rejectUnauthorized: false }
+      client: dbClient,
+      connection: {
+        host: configService.database.host,
+        port: configService.database.port,
+        user: configService.database.user,
+        password: configService.database.password,
+        database: configService.database.name || 'jboilerplate_staging',
+      },
+      migrations: {
+        directory: './migrations',
+        tableName: 'knex_migrations',
+      },
+      seeds: {
+        directory: './seeds',
+      },
+      pool: {
+        min: 2,
+        max: 10,
+      },
+      // Handle SSL connections for different database types
+      ...(dbClient === 'pg' ? {
+        connection: {
+          ssl: { rejectUnauthorized: false },
+        },
+      } : {}),
     },
     production: {
-      host: configService.database.host,
-      port: configService.database.port,
-      user: configService.database.user,
-      password: configService.database.password,
-      database: configService.database.name || 'jboilerplate_prod',
-      ssl: { rejectUnauthorized: false }
+      client: dbClient,
+      connection: {
+        host: configService.database.host,
+        port: configService.database.port,
+        user: configService.database.user,
+        password: configService.database.password,
+        database: configService.database.name || 'jboilerplate_prod',
+      },
+      migrations: {
+        directory: './migrations',
+        tableName: 'knex_migrations',
+      },
+      seeds: {
+        directory: './seeds',
+      },
+      pool: {
+        min: 2,
+        max: 10
+      },
+      // Handle SSL connections for different database types
+      ...(dbClient === 'pg' ? {
+        connection: {
+          ssl: { rejectUnauthorized: false },
+        },
+      } : {}),
     }
   };
   
-  return configs[env as keyof typeof configs] || configs.development;
+  return configs[env] || configs.development;
 };
 
-// Create the database pool
-const pool = new Pool(getDbConfig());
+// Create the Knex database client
+export const db = knex(getDbConfig());
 
-// Create the Drizzle ORM client
-export const db = drizzle(pool, { schema });
-
-// Export schema for use in migrations and queries
-export { schema }; 
+// Export types for usage in the app
+export type DbClient = typeof db; 

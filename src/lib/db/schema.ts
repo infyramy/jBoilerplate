@@ -1,75 +1,85 @@
-import { 
-  pgTable, 
-  serial, 
-  varchar, 
-  text, 
-  timestamp, 
-  boolean, 
-  uuid, 
-  integer, 
-  json,
-  primaryKey
-} from 'drizzle-orm/pg-core';
+/**
+ * This file serves as a template for creating Knex.js migrations
+ * Use this as a reference when creating new migrations with `knex migrate:make`
+ */
 
-// User schema
-export const users = pgTable('users', {
-  id: serial('id').primaryKey(),
-  uuid: uuid('uuid').defaultRandom().notNull().unique(),
-  name: varchar('name', { length: 255 }).notNull(),
-  email: varchar('email', { length: 255 }).notNull().unique(),
-  password: varchar('password', { length: 255 }).notNull(),
-  role: varchar('role', { length: 50 }).notNull().default('user'),
-  isActive: boolean('is_active').default(true),
-  lastLogin: timestamp('last_login', { withTimezone: true }),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
-});
+import { Knex } from 'knex';
 
-// Team schema
-export const teams = pgTable('teams', {
-  id: serial('id').primaryKey(),
-  uuid: uuid('uuid').defaultRandom().notNull().unique(),
-  name: varchar('name', { length: 255 }).notNull(),
-  description: text('description'),
-  ownerId: integer('owner_id').references(() => users.id).notNull(),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
-});
+/**
+ * Example migration to create users table
+ */
+export async function up(knex: Knex): Promise<void> {
+  // Create users table
+  await knex.schema.createTable('users', (table) => {
+    table.increments('id').primary();
+    table.uuid('uuid').defaultTo(knex.raw('uuid_generate_v4()')).notNullable().unique();
+    table.string('name', 255).notNullable();
+    table.string('email', 255).notNullable().unique();
+    table.string('password', 255).notNullable();
+    table.string('role', 50).notNullable().defaultTo('user');
+    table.boolean('is_active').defaultTo(true);
+    table.timestamp('last_login', { useTz: true });
+    table.timestamp('created_at', { useTz: true }).defaultTo(knex.fn.now()).notNullable();
+    table.timestamp('updated_at', { useTz: true }).defaultTo(knex.fn.now()).notNullable();
+  });
 
-// Team members relation
-export const teamMembers = pgTable('team_members', {
-  teamId: integer('team_id').references(() => teams.id).notNull(),
-  userId: integer('user_id').references(() => users.id).notNull(),
-  role: varchar('role', { length: 50 }).default('member').notNull(),
-  joinedAt: timestamp('joined_at', { withTimezone: true }).defaultNow().notNull(),
-}, (table) => {
-  return {
-    pk: primaryKey({ columns: [table.teamId, table.userId] })
-  };
-});
+  // Create teams table
+  await knex.schema.createTable('teams', (table) => {
+    table.increments('id').primary();
+    table.uuid('uuid').defaultTo(knex.raw('uuid_generate_v4()')).notNullable().unique();
+    table.string('name', 255).notNullable();
+    table.text('description');
+    table.integer('owner_id').notNullable().references('id').inTable('users').onDelete('CASCADE');
+    table.timestamp('created_at', { useTz: true }).defaultTo(knex.fn.now()).notNullable();
+    table.timestamp('updated_at', { useTz: true }).defaultTo(knex.fn.now()).notNullable();
+  });
 
-// Projects schema
-export const projects = pgTable('projects', {
-  id: serial('id').primaryKey(),
-  uuid: uuid('uuid').defaultRandom().notNull().unique(),
-  name: varchar('name', { length: 255 }).notNull(),
-  description: text('description'),
-  teamId: integer('team_id').references(() => teams.id).notNull(),
-  status: varchar('status', { length: 50 }).default('active').notNull(),
-  startDate: timestamp('start_date', { withTimezone: true }),
-  endDate: timestamp('end_date', { withTimezone: true }),
-  metadata: json('metadata'),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
-});
+  // Create team_members table
+  await knex.schema.createTable('team_members', (table) => {
+    table.integer('team_id').notNullable().references('id').inTable('teams').onDelete('CASCADE');
+    table.integer('user_id').notNullable().references('id').inTable('users').onDelete('CASCADE');
+    table.string('role', 50).defaultTo('member').notNullable();
+    table.timestamp('joined_at', { useTz: true }).defaultTo(knex.fn.now()).notNullable();
+    table.primary(['team_id', 'user_id']);
+  });
 
-// Settings schema
-export const settings = pgTable('settings', {
-  id: serial('id').primaryKey(),
-  userId: integer('user_id').references(() => users.id).notNull(),
-  theme: varchar('theme', { length: 50 }).default('light').notNull(),
-  notifications: boolean('notifications').default(true),
-  language: varchar('language', { length: 10 }).default('en').notNull(),
-  preferences: json('preferences'),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
-});
+  // Create projects table
+  await knex.schema.createTable('projects', (table) => {
+    table.increments('id').primary();
+    table.uuid('uuid').defaultTo(knex.raw('uuid_generate_v4()')).notNullable().unique();
+    table.string('name', 255).notNullable();
+    table.text('description');
+    table.integer('team_id').notNullable().references('id').inTable('teams').onDelete('CASCADE');
+    table.string('status', 50).defaultTo('active').notNullable();
+    table.timestamp('start_date', { useTz: true });
+    table.timestamp('end_date', { useTz: true });
+    table.jsonb('metadata');
+    table.timestamp('created_at', { useTz: true }).defaultTo(knex.fn.now()).notNullable();
+    table.timestamp('updated_at', { useTz: true }).defaultTo(knex.fn.now()).notNullable();
+  });
+
+  // Create settings table
+  await knex.schema.createTable('settings', (table) => {
+    table.increments('id').primary();
+    table.integer('user_id').notNullable().references('id').inTable('users').onDelete('CASCADE');
+    table.string('theme', 50).defaultTo('light').notNullable();
+    table.boolean('notifications').defaultTo(true);
+    table.string('language', 10).defaultTo('en').notNullable();
+    table.jsonb('preferences');
+    table.timestamp('updated_at', { useTz: true }).defaultTo(knex.fn.now()).notNullable();
+  });
+
+  // Optional: Create UUID extension if using PostgreSQL
+  await knex.raw('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"');
+}
+
+/**
+ * Example migration to drop tables
+ */
+export async function down(knex: Knex): Promise<void> {
+  await knex.schema.dropTableIfExists('settings');
+  await knex.schema.dropTableIfExists('projects');
+  await knex.schema.dropTableIfExists('team_members');
+  await knex.schema.dropTableIfExists('teams');
+  await knex.schema.dropTableIfExists('users');
+}

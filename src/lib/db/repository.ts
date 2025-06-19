@@ -1,43 +1,32 @@
-import { db, schema } from './index';
-import { eq, and, or, like, sql } from 'drizzle-orm';
-import type { SQL } from 'drizzle-orm';
+import { db } from './index';
 
 /**
  * Generic repository class for database operations
  */
-export class Repository<T extends keyof typeof schema> {
-  private tableName: T;
+export class Repository {
+  protected tableName: string;
 
-  constructor(tableName: T) {
+  constructor(tableName: string) {
     this.tableName = tableName;
-  }
-
-  /**
-   * Get table reference
-   */
-  private get table() {
-    return schema[this.tableName];
   }
 
   /**
    * Find all records with optional filtering
    */
   async findAll(options?: {
-    where?: SQL<unknown>;
+    where?: Record<string, any>;
     limit?: number;
     offset?: number;
     orderBy?: { column: string; direction: 'asc' | 'desc' };
   }) {
-    let query = db.select().from(this.table);
+    let query = db(this.tableName).select('*');
     
     if (options?.where) {
       query = query.where(options.where);
     }
     
     if (options?.orderBy) {
-      query = query.orderBy(
-        sql`${sql.identifier(options.orderBy.column)} ${options.orderBy.direction === 'desc' ? sql`DESC` : sql`ASC`}`
-      );
+      query = query.orderBy(options.orderBy.column, options.orderBy.direction);
     }
     
     if (options?.limit) {
@@ -55,33 +44,31 @@ export class Repository<T extends keyof typeof schema> {
    * Find a single record by id
    */
   async findById(id: number) {
-    const result = await db.select()
-      .from(this.table)
-      .where(eq((this.table as any).id, id))
-      .limit(1);
+    const result = await db(this.tableName)
+      .where({ id })
+      .first();
     
-    return result[0] || null;
+    return result || null;
   }
 
   /**
    * Find a single record by UUID
    */
   async findByUuid(uuid: string) {
-    const result = await db.select()
-      .from(this.table)
-      .where(eq((this.table as any).uuid, uuid))
-      .limit(1);
+    const result = await db(this.tableName)
+      .where({ uuid })
+      .first();
     
-    return result[0] || null;
+    return result || null;
   }
 
   /**
    * Create a new record
    */
   async create(data: Record<string, any>) {
-    const result = await db.insert(this.table)
-      .values(data)
-      .returning();
+    const result = await db(this.tableName)
+      .insert(data)
+      .returning('*');
     
     return result[0];
   }
@@ -90,13 +77,14 @@ export class Repository<T extends keyof typeof schema> {
    * Update a record by id
    */
   async updateById(id: number, data: Record<string, any>) {
-    const result = await db.update(this.table)
-      .set({
+    const now = new Date();
+    const result = await db(this.tableName)
+      .where({ id })
+      .update({
         ...data,
-        updatedAt: new Date()
+        updated_at: now
       })
-      .where(eq((this.table as any).id, id))
-      .returning();
+      .returning('*');
     
     return result[0];
   }
@@ -105,9 +93,10 @@ export class Repository<T extends keyof typeof schema> {
    * Delete a record by id
    */
   async deleteById(id: number) {
-    const result = await db.delete(this.table)
-      .where(eq((this.table as any).id, id))
-      .returning();
+    const result = await db(this.tableName)
+      .where({ id })
+      .del()
+      .returning('*');
     
     return result[0];
   }
@@ -115,18 +104,19 @@ export class Repository<T extends keyof typeof schema> {
   /**
    * Count records with optional filtering
    */
-  async count(options?: { where?: SQL<unknown> }) {
-    const result = await db.select({ count: sql<number>`count(*)` })
-      .from(this.table)
-      .where(options?.where || sql`TRUE`);
+  async count(options?: { where?: Record<string, any> }) {
+    const result = await db(this.tableName)
+      .where(options?.where || {})
+      .count('* as count')
+      .first();
     
-    return Number(result[0]?.count || 0);
+    return Number(result?.count || 0);
   }
 }
 
 // Export specific repositories for each table
 export const usersRepository = new Repository('users');
 export const teamsRepository = new Repository('teams');
-export const teamMembersRepository = new Repository('teamMembers');
+export const teamMembersRepository = new Repository('team_members');
 export const projectsRepository = new Repository('projects');
 export const settingsRepository = new Repository('settings'); 

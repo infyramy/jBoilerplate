@@ -104,9 +104,10 @@ async function selectAction() {
       choices: [
         { name: a('Clone new JBoilerplate project'), value: 'clone' },
         { name: a('Update existing JBoilerplate project'), value: 'update' },
+        { name: a('Manage database migrations'), value: 'migrations' },
         { name: a('Exit'), value: 'exit' },
       ],
-      pageSize: 4,
+      pageSize: 5,
       loop: false,
     }, 'Back', false); // No back on first page
     if (action !== '__back') break;
@@ -133,6 +134,251 @@ async function getProjectName() {
   return projectName;
 }
 
+// Simplified function to ask if user wants app-only or app with database
+async function getDeploymentOption() {
+  let deploymentOption;
+  while (true) {
+    deploymentOption = await backablePrompt({
+      type: 'list',
+      name: 'deploymentOption',
+      message: q('How would you like to deploy your application?'),
+      choices: [
+        { name: a('Full stack (with built-in MySQL database)'), value: 'with-db' },
+        { name: a('App only (connect to external database)'), value: 'app-only' },
+      ],
+      pageSize: 3,
+      loop: false,
+    }, 'Back', true);
+    if (deploymentOption !== '__back') break;
+  }
+  return deploymentOption;
+}
+
+// Function to handle database migrations
+async function handleDatabaseMigrations() {
+  clearScreen();
+  printAsciiArt();
+  console.log(chalk.cyanBright('Database Migration Management'));
+  console.log(chalk.gray('Choose how to handle your database schema:\n'));
+  
+  let migrationOption;
+  while (true) {
+    migrationOption = await backablePrompt({
+      type: 'list',
+      name: 'migrationOption',
+      message: q('What do you want to do with your database?'),
+      choices: [
+        { 
+          name: a('Scenario 1: Apply schema from project to empty DB'), 
+          value: 'apply-schema' 
+        },
+        { 
+          name: a('Scenario 2: Check migration status (for existing DB)'), 
+          value: 'check-status' 
+        },
+        { 
+          name: a('Scenario 3: Mark migrations as complete without applying'), 
+          value: 'mark-complete' 
+        },
+        { 
+          name: a('Scenario 4: Run specific migration'), 
+          value: 'specific-migration' 
+        },
+        { 
+          name: a('Back to main menu'), 
+          value: 'back' 
+        },
+      ],
+      pageSize: 6,
+      loop: false,
+    }, 'Back', false);
+    if (migrationOption !== '__back') break;
+  }
+  
+  if (migrationOption === 'back') return;
+  
+  // Get project directory
+  const { projectDir } = await inquirer.prompt([{
+    type: 'input',
+    name: 'projectDir',
+    message: q('Enter the path to your project:'),
+    transformer: u,
+    default: '.',
+  }]);
+  
+  try {
+    switch (migrationOption) {
+      case 'apply-schema':
+        console.log(chalk.cyan('\nApplying database schema from migrations...'));
+        console.log(chalk.gray('This will create all tables defined in migration files.'));
+        const { confirmApply } = await inquirer.prompt([{
+          type: 'confirm',
+          name: 'confirmApply',
+          message: q('Are you sure you want to apply all migrations?'),
+          default: false,
+        }]);
+        
+        if (confirmApply) {
+          const spinner = ora('Running migrations...').start();
+          try {
+            execSync('npx knex migrate:latest', { cwd: projectDir, stdio: 'pipe' });
+            spinner.succeed('Successfully applied migrations!');
+          } catch (error: any) {
+            spinner.fail('Failed to apply migrations.');
+            console.error(chalk.red('Error details:'));
+            console.error(chalk.gray(error.message || String(error)));
+          }
+        }
+        break;
+        
+      case 'check-status':
+        console.log(chalk.cyan('\nChecking migration status...'));
+        try {
+          const output = execSync('npx knex migrate:status', { cwd: projectDir, encoding: 'utf8' });
+          console.log(chalk.gray(output));
+        } catch (error: any) {
+          console.error(chalk.red('Failed to check migration status.'));
+          console.error(chalk.gray(error.message || String(error)));
+        }
+        break;
+        
+      case 'mark-complete':
+        console.log(chalk.cyan('\nMarking migrations as complete without running them...'));
+        console.log(chalk.yellow('Warning: This assumes your database schema already matches the migrations.'));
+        
+        // Get the list of migration files
+        let migrations: string[] = [];
+        try {
+          // Get migrations directory from knexfile if possible
+          let migrationsDir = './migrations';
+          if (fs.existsSync(path.join(projectDir, 'knexfile.js'))) {
+            console.log(chalk.gray('Reading knexfile.js for migrations directory...'));
+            // We can't easily import the knexfile, so we'll check in common locations
+            migrationsDir = './migrations'; // Default location
+          }
+          
+          migrations = fs.readdirSync(path.join(projectDir, migrationsDir))
+            .filter(file => file.endsWith('.js') || file.endsWith('.ts'));
+            
+          if (migrations.length === 0) {
+            console.log(chalk.yellow('No migration files found in the migrations directory.'));
+            return;
+          }
+          
+          // Select which migrations to mark as complete
+          const { selectedMigrations } = await inquirer.prompt([{
+            type: 'checkbox',
+            name: 'selectedMigrations',
+            message: q('Select migrations to mark as complete:'),
+            choices: migrations.map(m => ({ name: m, value: m })),
+            pageSize: Math.min(10, migrations.length + 1),
+            validate: (input: string[]) => input.length > 0 ? true : 'Select at least one migration'
+          }]);
+          
+          // Mark selected migrations as complete
+          if (selectedMigrations && selectedMigrations.length > 0) {
+            const spinner = ora('Marking migrations as complete...').start();
+            
+            // We'll use knex migrate:up with --to option for each selected migration
+            for (const migration of selectedMigrations) {
+              try {
+                console.log(chalk.gray(`\nMarking ${migration} as complete...`));
+                execSync(`npx knex migrate:up --name=${migration}`, { 
+                  cwd: projectDir, 
+                  stdio: 'pipe' 
+                });
+              } catch (error: any) {
+                spinner.fail(`Failed to mark migration ${migration} as complete.`);
+                console.error(chalk.red('Error details:'));
+                console.error(chalk.gray(error.message || String(error)));
+              }
+            }
+            
+            spinner.succeed('Successfully marked selected migrations as complete!');
+          }
+        } catch (error: any) {
+          console.error(chalk.red('Failed to process migrations.'));
+          console.error(chalk.gray(error.message || String(error)));
+        }
+        break;
+        
+      case 'specific-migration':
+        console.log(chalk.cyan('\nRunning specific migration...'));
+        
+        // Get migrations
+        try {
+          // Get migrations directory from knexfile if possible
+          let migrationsDir = './migrations';
+          
+          if (fs.existsSync(path.join(projectDir, 'migrations'))) {
+            const migrationFiles = fs.readdirSync(path.join(projectDir, migrationsDir))
+              .filter(file => file.endsWith('.js') || file.endsWith('.ts'));
+              
+            if (migrationFiles.length === 0) {
+              console.log(chalk.yellow('No migration files found.'));
+              return;
+            }
+            
+            // Select which migration to run
+            const { migrationFile } = await inquirer.prompt([{
+              type: 'list',
+              name: 'migrationFile',
+              message: q('Select a migration to run:'),
+              choices: migrationFiles.map(m => ({ name: m, value: m })),
+              pageSize: Math.min(10, migrationFiles.length + 1)
+            }]);
+            
+            if (migrationFile) {
+              const { direction } = await inquirer.prompt([{
+                type: 'list',
+                name: 'direction',
+                message: q('Run migration up or down?'),
+                choices: [
+                  { name: 'Up (apply migration)', value: 'up' },
+                  { name: 'Down (rollback migration)', value: 'down' }
+                ]
+              }]);
+              
+              const spinner = ora(`Running migration ${direction}...`).start();
+              try {
+                execSync(`npx knex migrate:${direction} --name=${migrationFile}`, { 
+                  cwd: projectDir, 
+                  stdio: 'pipe' 
+                });
+                spinner.succeed(`Successfully ran migration ${direction}!`);
+              } catch (error: any) {
+                spinner.fail(`Failed to run migration ${direction}.`);
+                console.error(chalk.red('Error details:'));
+                console.error(chalk.gray(error.message || String(error)));
+              }
+            }
+          } else {
+            console.log(chalk.yellow('Migrations directory not found.'));
+          }
+        } catch (error: any) {
+          console.error(chalk.red('Failed to process migrations.'));
+          console.error(chalk.gray(error.message || String(error)));
+        }
+        break;
+    }
+  } catch (error: any) {
+    console.error(chalk.red('An error occurred:'));
+    console.error(chalk.gray(error.message || String(error)));
+  }
+  
+  // Ask if they want to return to the migration menu
+  const { returnToMenu } = await inquirer.prompt([{
+    type: 'confirm',
+    name: 'returnToMenu',
+    message: q('Do you want to perform another migration operation?'),
+    default: true
+  }]);
+  
+  if (returnToMenu) {
+    await handleDatabaseMigrations();
+  }
+}
+
 async function getEnvSetup() {
   let envOption;
   while (true) {
@@ -142,9 +388,10 @@ async function getEnvSetup() {
       message: q('How do you want to set up your .env file?'),
       choices: [
         { name: a('Download from URL'), value: 'url' },
+        { name: a('Use default template (recommended)'), value: 'template' },
         { name: a('Edit manually later'), value: 'manual' },
       ],
-      pageSize: 3,
+      pageSize: 4,
       loop: false,
     }, 'Back', true);
     if (envOption !== '__back') break;
@@ -165,16 +412,144 @@ async function getEnvSetup() {
   return { envOption, envUrl };
 }
 
-async function setupEnvFile(envUrl: string, projectPath: string) {
+async function setupEnvFile(envOption: string, envUrl: string, projectPath: string, deploymentOption: string) {
+  const envFilePath = path.join(projectPath, '.env');
+  let envContent = '';
+
   const spinner = ora('Setting up .env file...').start();
+  
   try {
-    const res = await fetch(envUrl);
-    if (!res.ok) throw new Error('Failed to download .env');
-    const envContent = await res.text();
-    fs.writeFileSync(path.join(projectPath, '.env'), envContent);
-    spinner.succeed('.env file downloaded!');
+    if (envOption === 'url' && envUrl) {
+      const res = await fetch(envUrl);
+      if (!res.ok) throw new Error('Failed to download .env');
+      envContent = await res.text();
+    } else if (envOption === 'template') {
+      // Create default .env from template based on deployment option
+      envContent = `# Generated by jBoilerplate CLI\n\n`;
+      
+      if (deploymentOption === 'with-db') {
+        // For built-in database deployment
+        envContent += `# Docker settings\n`;
+        envContent += `DB_CLIENT=mysql\n`;
+        envContent += `DB_HOST=db\n`;
+        envContent += `DB_PORT=3306\n`;
+        envContent += `DB_USER=jboilerplate\n`;
+        envContent += `DB_PASSWORD=jboilerplate\n`;
+        envContent += `DB_NAME=jboilerplate\n`;
+        envContent += `DB_ROOT_PASSWORD=rootpassword\n\n`;
+        
+        envContent += `# App settings\n`;
+        envContent += `VITE_DB_CLIENT=mysql\n`;
+        envContent += `VITE_DB_HOST=db\n`;
+        envContent += `VITE_DB_PORT=3306\n`;
+        envContent += `VITE_DB_USER=jboilerplate\n`;
+        envContent += `VITE_DB_PASSWORD=jboilerplate\n`;
+        envContent += `VITE_DB_NAME=jboilerplate\n`;
+      } else {
+        // For app-only deployment
+        envContent += `# App settings\n`;
+        envContent += `VITE_DB_CLIENT=mysql\n`;
+        envContent += `VITE_DB_HOST=localhost\n`;
+        envContent += `VITE_DB_PORT=3306\n`;
+        envContent += `VITE_DB_USER=root\n`;
+        envContent += `VITE_DB_PASSWORD=\n`;
+        envContent += `VITE_DB_NAME=jboilerplate\n`;
+      }
+    }
+    
+    if (envContent) {
+      fs.writeFileSync(envFilePath, envContent);
+      spinner.succeed('.env file created!');
+    } else {
+      spinner.info('No .env file created. You can create one manually later.');
+    }
+    
+    // Always create .env.example as a reference
+    const exampleEnvPath = path.join(projectPath, '.env.example');
+    if (!fs.existsSync(exampleEnvPath)) {
+      // Copy from the included .env.example template if it exists
+      if (fs.existsSync(path.join(projectPath, '.env.example.template'))) {
+        fs.copyFileSync(
+          path.join(projectPath, '.env.example.template'),
+          exampleEnvPath
+        );
+      } else {
+        // Create a basic .env.example
+        const exampleEnvContent = `# Environment Configuration
+VITE_ENVIRONMENT=development
+
+# API Configuration
+VITE_API_URL=http://localhost:3000/api
+VITE_API_TIMEOUT=30000
+VITE_API_RETRIES=3
+
+# Docker Database Configuration
+# Used when running with docker-compose --profile with-db
+DB_IMAGE=mysql:8
+DB_PORT_FORWARD=3306
+DB_PORT=3306
+DB_HOST=db
+DB_USER=jboilerplate
+DB_PASSWORD=your-password
+DB_NAME=jboilerplate
+DB_ROOT_PASSWORD=your-root-password
+DB_CLIENT=mysql
+
+# Database Configuration for Application
+# These settings are used by the application to connect to the database
+VITE_DB_CLIENT=mysql
+VITE_DB_HOST=localhost
+VITE_DB_PORT=3306
+VITE_DB_USER=jboilerplate
+VITE_DB_PASSWORD=your-password
+VITE_DB_NAME=jboilerplate
+VITE_DB_SSL=false
+
+# Email Configuration
+VITE_PLUNK_API_KEY=
+VITE_DEFAULT_FROM_EMAIL=no-reply@jboilerplate.com
+
+# Feature Flags
+VITE_FEATURE_DARK_MODE=true
+VITE_FEATURE_MULTILINGUAL_SUPPORT=true
+VITE_FEATURE_NOTIFICATIONS=true
+VITE_FEATURE_ANALYTICS=false
+VITE_FEATURE_ADMIN_DASHBOARD=true
+VITE_FEATURE_USER_MANAGEMENT=true
+VITE_FEATURE_EMAIL_SERVICE=false`;
+
+        fs.writeFileSync(exampleEnvPath, exampleEnvContent);
+      }
+      console.log(chalk.gray('Created .env.example with configuration reference'));
+    }
+    
   } catch (e) {
-    spinner.fail('Failed to download .env file.');
+    spinner.fail('Failed to create .env file.');
+    console.error(e);
+  }
+}
+
+// Create a launch script based on deployment option
+async function createLaunchScript(projectPath: string, deploymentOption: string) {
+  const spinner = ora('Creating launch script...').start();
+  
+  try {
+    let launchScript = '#!/bin/bash\n\n';
+    
+    if (deploymentOption === 'with-db') {
+      launchScript += '# Start the full stack application with database\n';
+      launchScript += 'docker-compose --profile with-db up -d\n';
+    } else {
+      launchScript += '# Start the application only (connect to external database)\n';
+      launchScript += 'docker-compose -f docker-compose.app-only.yml up -d\n';
+    }
+    
+    fs.writeFileSync(path.join(projectPath, 'launch.sh'), launchScript);
+    fs.chmodSync(path.join(projectPath, 'launch.sh'), '755'); // Make executable
+    spinner.succeed('Launch script created!');
+  } catch (error) {
+    spinner.fail('Error creating launch script.');
+    console.error(error);
   }
 }
 
@@ -254,137 +629,201 @@ async function installDependencies(projectPath: string) {
           process.exit(1);
         }
       } else {
-        console.log(chalk.red('Setup cancelled by user.'));
+        console.log(chalk.red('Setup cancelled.'));
         process.exit(1);
       }
     } else if (e && e.message) {
       console.log(chalk.red('Error details:'));
       console.log(chalk.gray(e.message));
+      process.exit(1);
     }
-    process.exit(1);
   }
 }
 
 async function postSetupOptions(projectPath: string) {
-  const { openOption } = await inquirer.prompt([
+  console.log(chalk.cyan('\nSetup completed! What would you like to do next?'));
+  const { nextAction } = await inquirer.prompt([
     {
-      type: 'checkbox',
-      name: 'openOption',
-      message: q('What do you want to do next?'),
+      type: 'list',
+      name: 'nextAction',
+      message: q('Choose an option:'),
       choices: [
-        { name: a('Open in IDE'), value: 'ide' },
-        { name: a('Open in browser (start dev server)'), value: 'browser' },
+        { name: a('Start development server'), value: 'dev' },
+        { name: a('Open in VS Code (if installed)'), value: 'code' },
+        { name: a('Start Docker deployment'), value: 'docker' },
+        { name: a('Manage database migrations'), value: 'migrations' },
+        { name: a('Exit'), value: 'exit' },
       ],
-      pageSize: 2,
-      loop: false,
-    },
-  ]);
-  if (openOption.includes('ide')) {
-    spawn('code', [projectPath], { stdio: 'ignore', detached: true });
-  }
-  if (openOption.includes('browser')) {
-    const devProc = spawn('npm', ['run', 'dev'], { cwd: projectPath, stdio: 'ignore', detached: true });
-    setTimeout(() => {
-      require('open')('http://localhost:3000');
-    }, 5000);
-  }
-}
-
-// Add a summary page after user input, before install steps
-async function showSummary({ projectName, envOption, envUrl }: { projectName: string, envOption: string, envUrl: string }) {
-  clearScreen();
-  printAsciiArt();
-  console.log(chalk.cyanBright('Summary of your setup:'));
-  console.log(q('Project Name: ') + u(projectName));
-  console.log(q('Env Setup: ') + u(envOption === 'url' ? `Download from URL (${envUrl})` : 'Edit manually later'));
-  console.log();
-}
-
-// Helper to print a loading message and summary
-function printLoadingStep(label: string, summary: string, oraInstance?: import('ora').Ora) {
-  clearScreen();
-  printAsciiArt();
-  // Draw summary in a double-line box style, with color
-  const boxColor = chalk.hex('#444B53');
-  const titleColor = chalk.gray;
-  const valueColor = chalk.cyan;
-  // Split summary into lines, and colorize title/value
-  const lines = summary.split('\n').map(line => {
-    const match = line.match(/^(.*?):\s*(.*)$/);
-    if (match) {
-      return titleColor(match[1] + ':') + ' ' + valueColor(match[2]);
     }
-    return titleColor(line);
-  });
-  // Remove color codes for length calculation
-  const visibleLengths = lines.map(l => l.replace(/\x1b\[[0-9;]*m/g, '').length);
-  const maxLen = Math.max(...visibleLengths);
-  const pad = (l: string, idx: number) => {
-    const visibleLen = visibleLengths[idx];
-    return l + ' '.repeat(maxLen - visibleLen);
-  };
-  // Double-line box drawing with color
-  const top = boxColor('╔' + '═'.repeat(maxLen + 2) + '╗');
-  const bottom = boxColor('╚' + '═'.repeat(maxLen + 2) + '╝');
-  console.log(top);
-  lines.forEach((l, idx) => {
-    console.log(boxColor('║ ') + pad(l, idx) + boxColor(' ║'));
-  });
-  console.log(bottom + '\n');
-  // Show current state beside ora spinner if oraInstance is provided
-  if (oraInstance) {
-    oraInstance.text = chalk.cyanBright(label);
+  ]);
+
+  if (nextAction === 'dev') {
+    console.log(chalk.cyan('\nStarting development server...'));
+    const child = spawn('npm', ['run', 'dev'], { cwd: projectPath, stdio: 'inherit' });
+    child.on('close', code => {
+      process.exit(code || 0);
+    });
+  } else if (nextAction === 'code') {
+    try {
+      console.log(chalk.cyan('\nOpening in VS Code...'));
+      execSync(`code ${projectPath}`, { stdio: 'ignore' });
+      console.log(chalk.green('Done! VS Code should open shortly.'));
+      process.exit(0);
+    } catch (e) {
+      console.log(chalk.yellow('Failed to open VS Code. Please open it manually.'));
+      process.exit(0);
+    }
+  } else if (nextAction === 'docker') {
+    console.log(chalk.cyan('\nStarting Docker deployment...'));
+    try {
+      execSync(`cd ${projectPath} && ./launch.sh`, { stdio: 'inherit' });
+      console.log(chalk.green('Docker containers started successfully!'));
+      process.exit(0);
+    } catch (e) {
+      console.log(chalk.red('Failed to start Docker containers. Please run ./launch.sh manually.'));
+      process.exit(1);
+    }
+  } else if (nextAction === 'migrations') {
+    await handleDatabaseMigrations();
+    await postSetupOptions(projectPath);
   } else {
-    process.stdout.write(chalk.cyanBright('⏳ ' + label));
+    console.log(chalk.green('\nSetup complete! Happy coding!'));
+    process.exit(0);
   }
 }
 
-// Helper to build summary string
-function buildSummary({ projectName, envOption, envUrl, projectPath }: { projectName: string, envOption: string, envUrl: string, projectPath: string }) {
-  return [
-    'Project Name: ' + projectName,
-    'Directory: ' + (projectPath || '...'),
-    `.env file: ${envOption === 'url' ? `Download from URL (${envUrl})` : 'Edit manually later'}`,
-  ].join('\n');
+async function showSummary({ projectName, envOption, envUrl, deploymentOption }: { 
+  projectName: string, 
+  envOption: string, 
+  envUrl: string, 
+  deploymentOption: string 
+}) {
+  console.log(chalk.cyanBright('\n✨ Setup Summary:'));
+  console.log(chalk.white('Project name: ') + u(projectName));
+  console.log(chalk.white('Environment: ') + u(envOption === 'url' ? 'From URL' : (envOption === 'template' ? 'From template' : 'Manual setup')));
+  if (envOption === 'url') {
+    console.log(chalk.white('Env URL: ') + u(envUrl));
+  }
+  
+  // Show deployment option
+  console.log(chalk.white('Deployment: ') + u(deploymentOption === 'with-db' ? 'Full stack with database' : 'App only'));
+}
+
+function printLoadingStep(label: string, summary: string, oraInstance?: import('ora').Ora) {
+  const prefix = oraInstance ? '  ' : ''; // Add indentation if used with ora
+  console.log(`${prefix}${chalk.gray('⌛')} ${chalk.cyanBright(label)} ${chalk.gray(`(${summary})`)}`);
+}
+
+function buildSummary({ projectName, envOption, envUrl, projectPath, deploymentOption }: { 
+  projectName: string, 
+  envOption: string, 
+  envUrl: string, 
+  projectPath: string, 
+  deploymentOption: string 
+}) {
+  const steps = [
+    { label: 'Clone project', summary: `git clone to ${projectName}` },
+    { label: 'Install dependencies', summary: 'npm install' },
+    { label: 'Set up environment', summary: envOption === 'url' ? `Download from ${envUrl}` : (envOption === 'template' ? 'Create from template' : 'Manual setup') },
+    { label: 'Create IDE config', summary: '.editorconfig' },
+    { label: 'Deployment setup', summary: deploymentOption === 'with-db' ? 'With built-in database' : 'App only' },
+    { label: 'Create launch script', summary: './launch.sh' },
+  ];
+  
+  console.log(chalk.cyanBright('\n⚡ Project setup steps:'));
+  
+  // Add leading numbering and padding to align all steps
+  const maxLabelLength = Math.max(...steps.map(step => step.label.length));
+  const pad = (l: string, idx: number) => {
+    return `${chalk.gray(idx + 1 + '.')} ${chalk.cyanBright(l.padEnd(maxLabelLength, ' '))}`;
+  };
+  
+  steps.forEach((step, idx) => {
+    console.log(`  ${pad(step.label, idx)} ${chalk.gray(step.summary)}`);
+  });
+  
+  console.log(); // empty line
 }
 
 async function main() {
-  await ensureRequirements();
   await intro();
-  const action = await selectAction();
-  if (action === 'exit') return;
-  const projectName = await getProjectName();
-  const { envOption, envUrl } = await getEnvSetup();
-  let projectPath: string = '';
-  const summaryData = { projectName, envOption, envUrl, projectPath };
-  await showSummary({ projectName, envOption, envUrl });
+  await ensureRequirements();
 
-  // Steps with loading message
-  const steps = [
-    { fn: async () => await cloneOrUpdateRepo(action, projectName), label: 'Cloning/Updating project...' },
-    { fn: async (p: string) => envOption === 'url' ? await setupEnvFile(envUrl, p) : undefined, label: 'Setting up .env file...' },
-    { fn: async (p: string) => await setupIDEConfig(p), label: 'Setting up IDE config...' },
-    { fn: async (p: string) => await installDependencies(p), label: 'Installing dependencies...' },
-  ];
-  for (let i = 0; i < steps.length; i++) {
-    let label = steps[i].label;
-    printLoadingStep(label, buildSummary({ ...summaryData, projectPath }));
-    if (i === 0) {
-      const result = await steps[i].fn("");
-      if (typeof result === 'string') projectPath = result;
-      summaryData.projectPath = projectPath;
-    } else {
-      await steps[i].fn(projectPath);
-    }
+  const action = await selectAction();
+  
+  if (action === 'exit') {
+    console.log(chalk.green('Goodbye!'));
+    process.exit(0);
   }
-  // Final message
-  clearScreen();
-  printAsciiArt();
-  console.log(chalk.greenBright('\nAll done!'));
+  
+  if (action === 'migrations') {
+    await handleDatabaseMigrations();
+    // After handling migrations, return to main menu
+    await main();
+    return;
+  }
+
+  let projectName;
+  if (action === 'clone') {
+    projectName = await getProjectName();
+  } else {
+    const { dir } = await inquirer.prompt([{
+      type: 'input',
+      name: 'dir',
+      message: q('Enter the path to your existing JBoilerplate project:'),
+      transformer: u,
+      default: '.',
+    }]);
+    projectName = dir;
+  }
+
+  // Get deployment option (with-db or app-only)
+  const deploymentOption = await getDeploymentOption();
+
+  const { envOption, envUrl } = await getEnvSetup();
+  
+  console.log(chalk.gray('\nReady to start! We will:'));
+  buildSummary({ 
+    projectName, 
+    envOption, 
+    envUrl, 
+    projectPath: '', 
+    deploymentOption 
+  });
+  
+  const { confirm } = await inquirer.prompt([{
+    type: 'confirm',
+    name: 'confirm',
+    message: q('Proceed with setup?'),
+    default: true,
+  }]);
+  
+  if (!confirm) {
+    console.log(chalk.yellow('Setup cancelled.'));
+    process.exit(0);
+  }
+  
+  // Actual setup process
+  const projectPath = await cloneOrUpdateRepo(action, projectName);
+  await installDependencies(projectPath);
+  await setupEnvFile(envOption, envUrl, projectPath, deploymentOption);
+  await createLaunchScript(projectPath, deploymentOption);
+  await setupIDEConfig(projectPath);
+  
+  // Show summary
+  await showSummary({ 
+    projectName, 
+    envOption, 
+    envUrl, 
+    deploymentOption 
+  });
+  
+  // Post setup options
   await postSetupOptions(projectPath);
-  clearScreen();
-  printAsciiArt();
-  console.log(chalk.greenBright('\nEnjoy your development! 🚀'));
 }
 
-main();
+main().catch(err => {
+  console.error(chalk.red('An error occurred:'));
+  console.error(err);
+  process.exit(1);
+});

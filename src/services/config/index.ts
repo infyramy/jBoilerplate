@@ -11,6 +11,7 @@ export interface AppConfig {
     retries: number;
   };
   database: {
+    client: string;
     host: string;
     port: number;
     user: string;
@@ -40,6 +41,7 @@ const defaultConfig: AppConfig = {
     retries: 3,
   },
   database: {
+    client: 'pg',
     host: 'localhost',
     port: 5432,
     user: 'postgres',
@@ -78,6 +80,7 @@ const loadConfigFromEnv = (): Partial<AppConfig> => {
       retries: Number(import.meta.env.VITE_API_RETRIES) || defaultConfig.api.retries,
     },
     database: {
+      client: import.meta.env.VITE_DB_CLIENT || defaultConfig.database.client,
       host: import.meta.env.VITE_DB_HOST || defaultConfig.database.host,
       port: Number(import.meta.env.VITE_DB_PORT) || defaultConfig.database.port,
       user: import.meta.env.VITE_DB_USER || defaultConfig.database.user,

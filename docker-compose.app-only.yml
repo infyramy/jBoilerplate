@@ -1,0 +1,27 @@
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - VITE_DB_CLIENT=${VITE_DB_CLIENT:-mysql}
+      - VITE_DB_HOST=${VITE_DB_HOST:-localhost}
+      - VITE_DB_PORT=${VITE_DB_PORT:-3306}
+      - VITE_DB_USER=${VITE_DB_USER:-root}
+      - VITE_DB_PASSWORD=${VITE_DB_PASSWORD:-}
+      - VITE_DB_NAME=${VITE_DB_NAME:-jboilerplate}
+      - VITE_DB_SSL=${VITE_DB_SSL:-false}
+    ports:
+      - "${WEB_PORT:-3100}:80"
+    volumes:
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

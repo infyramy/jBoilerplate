@@ -1,6 +1,6 @@
 # jBoilerplate
 
-A modern Vue 3 boilerplate with TypeScript, Shadcn UI components, and comprehensive features for quickly starting new projects.
+A modern Vue 3 boilerplate with TypeScript, Shadcn UI, and flexible database options.
 
 ## Features
 
@@ -10,286 +10,175 @@ A modern Vue 3 boilerplate with TypeScript, Shadcn UI components, and comprehens
 - 📦 [Pinia](https://pinia.vuejs.org/) for state management
 - 🔄 [Vue Router](https://router.vuejs.org/) with route guards
 - 🌐 [Vue I18n](https://vue-i18n.intlify.dev/) for internationalization
-- 🔍 [Drizzle ORM](https://orm.drizzle.team/) for database access
-- 📧 Plunk email integration
-- 📊 Umami analytics
-- 🔒 Advanced authentication and authorization
+- 🔍 [Knex.js](https://knexjs.org/) for database access
 - 🎭 Dark mode with system preference detection
-- 🚦 Form validation with VeeValidate
+- 🚦 Form validation with Vuelidate
 - 📱 Responsive design
 - 📈 Dashboard components and layouts
 - 🛠️ Admin and SuperAdmin interfaces
 - ⚡ Vite for lightning-fast development
+- 🗄️ Flexible database options (MySQL, PostgreSQL, SQLite)
+- 🐳 Docker deployment options
+- 🛠️ CLI for easy setup
+
+## Prerequisites
+
+- Node.js 16+
+- pnpm 8+
+- Docker and Docker Compose (for containerized deployment)
 
 ## Quick Start
 
-### Prerequisites
+### Using the CLI (Recommended)
 
-1. Install pnpm (if you haven't already):
-   ```bash
-   npm install -g pnpm
-   ```
-
-### Clone and Setup
-
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/jboilerplate.git
-cd jboilerplate
-
-# One command setup (installs dependencies and builds the project)
-pnpm setup
-```
-
-## Development
+The jBoilerplate CLI makes it easy to set up your project with your preferred database configuration:
 
 ```bash
 # Install dependencies
 pnpm install
 
+# Run the setup CLI
+pnpm run cli:setup
+```
+
+The CLI will guide you through configuring your application with the following options:
+
+1. **Full stack deployment** - Includes a MySQL database container
+2. **App-only deployment** - Connect to your own external database
+
+### Manual Setup
+
+#### Option 1: Full Stack Deployment (with built-in database)
+
+1. Create a `.env` file with database credentials:
+
+```env
+# Docker settings
+DB_CLIENT=mysql
+DB_HOST=db
+DB_PORT=3306
+DB_USER=jboilerplate
+DB_PASSWORD=jboilerplate
+DB_NAME=jboilerplate
+DB_ROOT_PASSWORD=rootpassword
+
+# App settings
+VITE_DB_CLIENT=mysql
+VITE_DB_HOST=db
+VITE_DB_PORT=3306
+VITE_DB_USER=jboilerplate
+VITE_DB_PASSWORD=jboilerplate
+VITE_DB_NAME=jboilerplate
+```
+
+2. Start the application with database:
+
+```bash
+# Start with database
+pnpm run docker:full
+```
+
+#### Option 2: App-Only Deployment (connect to external database)
+
+1. Create a `.env` file with your external database credentials:
+
+```env
+# App settings
+VITE_DB_CLIENT=mysql  # or pg for PostgreSQL, sqlite3 for SQLite
+VITE_DB_HOST=your-db-host
+VITE_DB_PORT=3306     # or 5432 for PostgreSQL
+VITE_DB_USER=your-username
+VITE_DB_PASSWORD=your-password
+VITE_DB_NAME=your-database
+```
+
+2. Start the application only:
+
+```bash
+# Start application only
+pnpm run docker:app-only
+```
+
+## Database Migrations
+
+Run migrations to set up your database schema:
+
+```bash
+# Create a new migration
+pnpm run migrate:make migration_name
+
+# Run migrations
+pnpm run migrate:latest
+
+# Rollback migrations
+pnpm run migrate:rollback
+
+# Create a seed file
+pnpm run seed:make seed_name
+
+# Run seeds
+pnpm run seed:run
+```
+
+## Development
+
+```bash
 # Start development server
-pnpm dev
+pnpm run dev
 
 # Build for production
-pnpm build
+pnpm run build
 
-# Preview production build
-pnpm preview
+# Run tests
+pnpm run test
 ```
 
-### Available Scripts
+## Environment Variables
 
-- `pnpm setup` - Initial project setup after cloning
-- `pnpm dev` - Start development server
-- `pnpm build` - Build for production
-- `pnpm preview` - Preview production build
-- `pnpm lint` - Lint code
-- `pnpm test` - Run tests
-- `pnpm test:watch` - Run tests in watch mode
-
-## Configuration
-
-### TypeScript Configuration
-
-The project uses a multi-tsconfig setup for better type checking and build performance:
-
-- `tsconfig.json` - Base configuration file
-- `tsconfig.app.json` - Application-specific configuration
-- `tsconfig.node.json` - Node.js/build tools configuration
-
-Key TypeScript features enabled:
-- Project references for faster builds
-- Strict type checking
-- Module resolution with path aliases
-- Declaration file generation
-- Import extensions support
-
-Important settings in `tsconfig.node.json`:
-```json
-{
-  "compilerOptions": {
-    "composite": true,
-    "emitDeclarationOnly": true,
-    "allowImportingTsExtensions": true
-  }
-}
-```
-
-### Environment Variables
-
-Create a `.env` file based on `.env.example`:
-
-```
-VITE_API_URL=http://localhost:3000/api
-VITE_PLUNK_API_KEY=your_plunk_api_key
-VITE_UMAMI_WEBSITE_ID=your_umami_id
-VITE_UMAMI_URL=https://analytics.example.com
-```
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `VITE_DB_CLIENT` | Database client (mysql, pg, sqlite3) | mysql |
+| `VITE_DB_HOST` | Database host | localhost |
+| `VITE_DB_PORT` | Database port | 3306 |
+| `VITE_DB_USER` | Database username | jboilerplate |
+| `VITE_DB_PASSWORD` | Database password | jboilerplate |
+| `VITE_DB_NAME` | Database name | jboilerplate |
+| `VITE_DB_SSL` | Enable SSL for database connection | false |
 
 ## Project Structure
 
 ```
-my-project/
-├── public/                 # Static assets
+jBoilerplate/
+├── cli/                   # CLI tool for project setup
+├── migrations/            # Database migrations
+├── public/               # Static assets
+├── seeds/                # Database seed files
 ├── src/
-│   ├── assets/             # Application assets
-│   ├── components/         # Vue components
-│   │   └── ui/             # Shadcn UI components
-│   ├── composables/        # Vue composables
-│   ├── constants/          # Application constants
-│   ├── layouts/            # Page layouts
-│   ├── lib/                # Utilities and libraries
-│   │   └── db/             # Database integration
-│   ├── locales/            # I18n translation files
-│   ├── pages/              # Application pages
-│   │   ├── admin/          # Admin pages
-│   │   └── superadmin/     # SuperAdmin pages
-│   ├── plugins/            # Vue plugins
-│   ├── router/             # Vue Router configuration
-│   ├── services/           # API and other services
-│   ├── stores/             # Pinia stores
-│   └── types/              # TypeScript type definitions
-├── components.json         # Shadcn UI configuration
-├── vite.config.ts          # Vite configuration
-└── tsconfig.json           # TypeScript configuration
+│   ├── assets/           # Application assets
+│   ├── components/       # Vue components
+│   │   └── ui/           # Shadcn UI components
+│   ├── composables/      # Vue composables
+│   ├── constants/        # Application constants
+│   ├── layouts/          # Page layouts
+│   ├── lib/              # Utilities and libraries
+│   │   └── db/           # Database integration
+│   ├── locales/          # I18n translation files
+│   ├── pages/            # Application pages
+│   │   ├── admin/        # Admin pages
+│   │   └── superadmin/   # SuperAdmin pages
+│   ├── plugins/          # Vue plugins
+│   ├── router/           # Vue Router configuration
+│   ├── services/         # API and other services
+│   ├── stores/           # Pinia stores
+│   └── types/            # TypeScript type definitions
+├── templates/            # Project templates
+├── components.json       # Shadcn UI configuration
+├── docker-compose.yml    # Full stack Docker configuration
+├── docker-compose.app-only.yml # App-only Docker configuration
+├── knexfile.js          # Knex.js configuration
+└── vite.config.mts      # Vite configuration
 ```
-
-## Features
-
-### Authentication
-
-jBoilerplate provides a complete authentication system with:
-
-- User registration and login
-- JWT token handling with HTTP-only cookies
-- Role-based access control
-- Password reset flow
-- Account verification
-
-### Internationalization
-
-Support for multiple languages using Vue I18n:
-
-```javascript
-// Change language
-const { locale } = useI18n();
-locale.value = 'es';
-
-// Use in templates
-<p>{{ $t('welcome.message') }}</p>
-```
-
-### Theming
-
-Customize the application theme in `tailwind.config.js`:
-
-```javascript
-theme: {
-  extend: {
-    colors: {
-      primary: {...},
-      secondary: {...}
-    }
-  }
-}
-```
-
-### Admin Dashboard
-
-The admin dashboard includes:
-
-- Analytics overview
-- User management
-- Settings management
-- Role and permission management
-- System health monitoring
-
-## Customization
-
-### Adding New Components
-
-1. Create a new component in `src/components/`:
-
-```vue
-<script setup lang="ts">
-defineProps<{
-  title: string;
-}>();
-</script>
-
-<template>
-  <div class="my-component">
-    <h2>{{ title }}</h2>
-    <slot />
-  </div>
-</template>
-```
-
-2. Import and use it in your pages:
-
-```vue
-<script setup lang="ts">
-import MyComponent from '@/components/MyComponent.vue';
-</script>
-
-<template>
-  <MyComponent title="Hello World">
-    Content goes here
-  </MyComponent>
-</template>
-```
-
-### Adding New Pages
-
-1. Create a new page in `src/pages/`:
-
-```vue
-<script setup lang="ts">
-import MainLayout from '@/layouts/MainLayout.vue';
-</script>
-
-<template>
-  <MainLayout>
-    <h1>New Page</h1>
-    <p>This is a new page</p>
-  </MainLayout>
-</template>
-```
-
-2. Add a route in `src/router/routes/`:
-
-```typescript
-export default [
-  {
-    path: '/new-page',
-    name: 'NewPage',
-    component: () => import('@/pages/NewPage.vue'),
-    meta: {
-      requiresAuth: true,
-      title: 'New Page'
-    }
-  }
-];
-```
-
-## Performance Optimization
-
-The boilerplate includes several performance optimizations:
-
-- Route-based code splitting
-- Image optimization
-- Lazy loading components
-- Asset caching
-- Server-side rendering (optional)
-
-## Security
-
-Built-in security features:
-
-- CSRF protection
-- Input sanitization
-- XSS protection
-- Content Security Policy
-- Secure authentication flow
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgements
-
-- [Vue.js](https://vuejs.org/)
-- [Shadcn UI](https://ui.shadcn.com/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Vite](https://vitejs.dev/)
-- [TypeScript](https://www.typescriptlang.org/)
+MIT
