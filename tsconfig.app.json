@@ -29,5 +29,9 @@
     "composite": true
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "src/**/*.json"],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    "src/components/config-demo.vue",
+    "src/components/ui/data-table/DataTableExample.vue"
+  ]
 }

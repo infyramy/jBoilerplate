@@ -7,8 +7,13 @@ ENV NODE_ENV=production
 ENV CI=true
 ENV NPM_CONFIG_LOGLEVEL=verbose
 
-# Copy package files and install dependencies with npm instead of pnpm
+# Copy package files 
 COPY package.json ./
+
+# Modify package.json to replace pnpm prepare script with npm
+RUN sed -i 's/"prepare": "pnpm run build"/"prepare": "npm run build"/g' package.json
+
+# Install dependencies
 RUN npm config set registry https://registry.npmjs.org/
 RUN npm install --legacy-peer-deps
 
