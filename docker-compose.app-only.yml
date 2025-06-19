@@ -4,9 +4,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile.simple
-      args:
-        - NODE_ENV=production
+      dockerfile: Dockerfile.minimal
     restart: unless-stopped
     environment:
       - NODE_ENV=production
