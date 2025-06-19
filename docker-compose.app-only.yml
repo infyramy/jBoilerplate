@@ -5,6 +5,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - NODE_ENV=production
+        - CI=true
+        - HUSKY=0
     restart: unless-stopped
     environment:
       - NODE_ENV=production
