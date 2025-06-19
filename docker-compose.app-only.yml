@@ -4,11 +4,9 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.simple
       args:
         - NODE_ENV=production
-        - CI=true
-        - NPM_CONFIG_LOGLEVEL=verbose
     restart: unless-stopped
     environment:
       - NODE_ENV=production

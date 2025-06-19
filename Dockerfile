@@ -7,21 +7,22 @@ ENV NODE_ENV=production
 ENV CI=true
 ENV NPM_CONFIG_LOGLEVEL=verbose
 
-# Copy package files 
+# Copy package files first
 COPY package.json ./
 
-# Modify package.json to replace pnpm prepare script with npm
-RUN sed -i 's/"prepare": "pnpm run build"/"prepare": "npm run build"/g' package.json
+# Create a Docker-specific package.json by removing problematic scripts
+RUN cat package.json | grep -v '"prepare":' | grep -v '"setup":' | grep -v '"cli:setup":' > docker-package.json && \
+    mv docker-package.json package.json
 
 # Install dependencies
-RUN npm config set registry https://registry.npmjs.org/
-RUN npm install --legacy-peer-deps
+RUN npm config set registry https://registry.npmjs.org/ && \
+    npm install --no-audit --no-fund --legacy-peer-deps
 
 # Copy the rest of the application code
 COPY . .
 
-# Build the application with npm
-RUN npm run build
+# Directly run the build command without hooks
+RUN npm run build || (echo "Build failed, retrying with additional debug info" && NODE_ENV=production DEBUG=* npm run build)
 
 # Production stage
 FROM nginx:alpine AS production
