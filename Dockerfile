@@ -1,30 +1,22 @@
 FROM node:18-alpine AS build
 
-# Install pnpm with explicit version for stability
-RUN npm install -g pnpm@8.14.0
-
-# Set working directory
 WORKDIR /app
 
-# Set environment variable to bypass Husky install during CI
-ENV CI=true
-ENV HUSKY=0
+# Set environment variables
 ENV NODE_ENV=production
+ENV CI=true
+ENV NPM_CONFIG_LOGLEVEL=verbose
 
-# Copy package files first for better layer caching
-COPY package.json pnpm-lock.yaml ./
-
-# Install dependencies with more verbose output and retry logic
-RUN echo "Installing dependencies..." && \
-    pnpm install --frozen-lockfile --no-optional || \
-    (echo "Retrying pnpm install with network timeout..." && \
-    pnpm install --frozen-lockfile --no-optional --network-timeout 100000)
+# Copy package files and install dependencies with npm instead of pnpm
+COPY package.json ./
+RUN npm config set registry https://registry.npmjs.org/
+RUN npm install --legacy-peer-deps
 
 # Copy the rest of the application code
 COPY . .
 
-# Build the application
-RUN pnpm build
+# Build the application with npm
+RUN npm run build
 
 # Production stage
 FROM nginx:alpine AS production

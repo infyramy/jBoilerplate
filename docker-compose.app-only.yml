@@ -8,7 +8,7 @@ services:
       args:
         - NODE_ENV=production
         - CI=true
-        - HUSKY=0
+        - NPM_CONFIG_LOGLEVEL=verbose
     restart: unless-stopped
     environment:
       - NODE_ENV=production
