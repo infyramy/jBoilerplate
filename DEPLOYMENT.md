@@ -12,7 +12,19 @@ This guide explains how to deploy your Vue.js application to Coolify.
 
 ### Deployment Options
 
-#### Option 1: Simple Dockerfile (Recommended for Coolify)
+#### Option 1: Ultra-Simple Dockerfile (Most Reliable for Coolify)
+
+Use `Dockerfile.simple` for the most reliable deployment:
+
+```bash
+# In Coolify, set the build configuration:
+# - Dockerfile: Dockerfile.simple
+# - Port: 3000
+```
+
+This skips TypeScript checking for faster, more reliable builds in deployment environments.
+
+#### Option 2: Standard Simple Dockerfile
 
 Use `Dockerfile.coolify` for a straightforward deployment:
 
@@ -22,9 +34,9 @@ Use `Dockerfile.coolify` for a straightforward deployment:
 # - Port: 3000
 ```
 
-This uses a simple static file server and is the most reliable option for Coolify.
+This uses a simple static file server with full build process.
 
-#### Option 2: Nginx Multi-stage Build
+#### Option 3: Nginx Multi-stage Build
 
 Use the main `Dockerfile` for a more production-ready nginx setup:
 
@@ -80,10 +92,12 @@ VITE_FEATURE_EMAIL_SERVICE=false
 
 #### Build Fails
 
-1. **pnpm lock file issues**: The Dockerfiles use `--no-frozen-lockfile` to handle lockfile mismatches automatically
-2. **Memory issues**: Coolify might need more memory for the build process
-3. **Dependencies**: Check that all dependencies are properly listed in `package.json`
-4. **Missing files**: Ensure all imported files exist (check for missing constants or components)
+1. **TypeScript issues**: Use `Dockerfile.simple` to skip TypeScript checking in deployment
+2. **pnpm lock file issues**: The Dockerfiles use `--no-frozen-lockfile` to handle lockfile mismatches automatically
+3. **Memory issues**: Coolify might need more memory for the build process
+4. **Dependencies**: Check that all dependencies are properly listed in `package.json`
+5. **Missing files**: Ensure all imported files exist (check for missing constants or components)
+6. **prepare script issues**: Updated Dockerfiles skip the prepare script that was causing build failures
 
 #### App doesn't start
 

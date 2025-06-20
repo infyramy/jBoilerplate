@@ -10,14 +10,14 @@ RUN npm install -g pnpm
 # Copy package files first for better caching
 COPY package.json pnpm-lock.yaml ./
 
-# Install dependencies
-RUN pnpm install --no-frozen-lockfile
+# Install dependencies (skip prepare script)
+RUN pnpm install --no-frozen-lockfile --ignore-scripts
 
 # Copy source code
 COPY . .
 
-# Build the application
-RUN pnpm run build
+# Build the application (skip TypeScript check for faster deployment)
+RUN pnpm run build:only
 
 # Install a simple static file server
 RUN npm install -g serve

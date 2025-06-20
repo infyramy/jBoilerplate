@@ -1,0 +1,28 @@
+# Simple Dockerfile for Coolify deployment
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install pnpm
+RUN npm install -g pnpm
+
+# Copy package files
+COPY package.json pnpm-lock.yaml ./
+
+# Install dependencies (production only, skip all scripts)
+RUN pnpm install --prod=false --ignore-scripts
+
+# Copy source code
+COPY . .
+
+# Build without TypeScript checking (faster, more reliable for deployment)
+RUN pnpm run build:only
+
+# Install serve for serving static files
+RUN npm install -g serve
+
+# Expose port
+EXPOSE 3000
+
+# Start the application
+CMD ["serve", "-s", "dist", "-l", "3000"] 

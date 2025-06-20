@@ -19,13 +19,13 @@ RUN apk add --no-cache \
 # Copy package management files
 COPY package.json pnpm-lock.yaml ./
 
-# Install dependencies using pnpm (allow lockfile updates for deployment)
-RUN pnpm install --no-frozen-lockfile --prod=false
+# Install dependencies using pnpm (skip prepare script)
+RUN pnpm install --no-frozen-lockfile --prod=false --ignore-scripts
 
 # Copy source code
 COPY . .
 
-# Build the application
+# Build the application explicitly
 RUN pnpm run build
 
 # Production stage with nginx

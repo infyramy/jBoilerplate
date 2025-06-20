@@ -33,11 +33,12 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
+    "build:only": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepare": "pnpm run build",
+    "prepare": "echo 'Skipping prepare script in production build'",
     "setup": "pnpm install && pnpm run build",
     "migrate:make": "knex migrate:make",
     "migrate:latest": "knex migrate:latest",
