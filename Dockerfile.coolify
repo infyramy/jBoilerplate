@@ -1,29 +1,30 @@
-# Coolify-optimized Dockerfile for Vue.js app
+# Coolify-Optimized Vue.js Dockerfile
 FROM node:20-alpine
 
 # Set working directory
 WORKDIR /app
 
-# Install pnpm
-RUN npm install -g pnpm
+# Install pnpm and serve (static file server)
+RUN npm install -g pnpm serve
 
-# Copy package files first for better caching
+# Copy package files
 COPY package.json pnpm-lock.yaml ./
 
-# Install dependencies (skip prepare script)
+# Install dependencies (skip all scripts for maximum reliability)
 RUN pnpm install --no-frozen-lockfile --ignore-scripts
 
 # Copy source code
 COPY . .
 
-# Build the application (skip TypeScript check for faster deployment)
+# Build application (skip TypeScript check for faster deployment)
 RUN pnpm run build:only
-
-# Install a simple static file server
-RUN npm install -g serve
 
 # Expose port (Coolify will handle port mapping)
 EXPOSE 3000
 
-# Start the application
+# Simple health check that works with Coolify
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1
+
+# Start static file server
 CMD ["serve", "-s", "dist", "-l", "3000"] 

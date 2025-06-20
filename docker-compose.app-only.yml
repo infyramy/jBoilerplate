@@ -4,8 +4,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile
-      target: production
+      dockerfile: Dockerfile.coolify
     restart: unless-stopped
     environment:
       - NODE_ENV=production
@@ -29,11 +28,11 @@ services:
       - VITE_FEATURE_USER_MANAGEMENT=${VITE_FEATURE_USER_MANAGEMENT:-true}
       - VITE_FEATURE_EMAIL_SERVICE=${VITE_FEATURE_EMAIL_SERVICE:-false}
     ports:
-      - "${WEB_PORT:-3100}:80"
+      - "${WEB_PORT:-3100}:3000"
     volumes:
       - ./logs:/app/logs
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
       interval: 30s
       timeout: 10s
       retries: 3

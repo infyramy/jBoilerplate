@@ -5,7 +5,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: production
     restart: unless-stopped
     environment:
       - NODE_ENV=production
