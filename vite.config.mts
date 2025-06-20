@@ -188,23 +188,20 @@ export default defineConfig({
   },
   preview: {
     port: 3000,
-    host: true, // This enables listening on all network interfaces
+    host: "0.0.0.0", // Essential for Coolify - listen on all interfaces
   },
   server: {
-    host: "0.0.0.0", // This enables listening on all network interfaces
-    port: 3001, // Changed from 3000 to avoid conflicts
-    strictPort: false, // Allow fallback to another port if 3001 is in use
-    open: true, // Auto-open in browser
+    host: "0.0.0.0", // Essential for Docker/Coolify - listen on all interfaces
+    port: 3001,
+    strictPort: false,
+    open: false, // Don't auto-open in production environment
     proxy: {
       // Add API proxy configuration if needed
       '/api': {
-        target: 'http://localhost:3002',
-        changeOrigin: true
-      }
+        target: process.env.VITE_API_URL || 'http://localhost:3000',
+        changeOrigin: true,
+        secure: false,
+      },
     },
-    cors: true,
-    hmr: {
-      overlay: true
-    }
   },
 });

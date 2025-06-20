@@ -1,37 +1,51 @@
-FROM node:20-alpine as build
+# Multi-stage build for production Vue.js app
+FROM node:20-alpine AS base
+
+# Install pnpm globally
+RUN npm install -g pnpm
+
+# Enable corepack for pnpm
+RUN corepack enable
 
 WORKDIR /app
 
-# Install dependencies for node-gyp
-RUN apk add --no-cache python3 make g++ git
+# Install system dependencies needed for some npm packages
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++ \
+    git
 
-# Copy package files
-COPY package.json ./
+# Copy package management files
+COPY package.json pnpm-lock.yaml ./
 
-# Remove lifecycle scripts from package.json that might cause issues
-RUN node -e "const pkg=JSON.parse(require('fs').readFileSync('./package.json')); \
-    delete pkg.scripts.prepare; \
-    delete pkg.scripts.setup; \
-    delete pkg.scripts.cli; \
-    delete pkg.scripts['cli:setup']; \
-    require('fs').writeFileSync('./package.json', JSON.stringify(pkg, null, 2));"
+# Install dependencies using pnpm with frozen lockfile
+RUN pnpm install --frozen-lockfile --prod=false
 
-# Install dependencies directly with npm, avoiding lifecycle scripts
-RUN npm install --no-audit --no-fund --ignore-scripts
-
-# Copy source files
+# Copy source code
 COPY . .
 
-# Build directly using webpack/vite commands to avoid npm scripts
-RUN node ./node_modules/.bin/vue-tsc --noEmit && node ./node_modules/.bin/vite build
+# Build the application
+RUN pnpm run build
 
-# Production stage
-FROM nginx:stable-alpine
+# Production stage with nginx
+FROM nginx:stable-alpine AS production
 
-# Copy built files from the build stage
-COPY --from=build /app/dist /usr/share/nginx/html
+# Copy nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
+# Copy built application from build stage
+COPY --from=base /app/dist /usr/share/nginx/html
+
+# Create log directory
+RUN mkdir -p /app/logs && chown -R nginx:nginx /app/logs
+
+# Expose port 80
 EXPOSE 80
 
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost/ || exit 1
+
+# Start nginx
 CMD ["nginx", "-g", "daemon off;"]

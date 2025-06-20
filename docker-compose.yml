@@ -5,24 +5,38 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: production
     restart: unless-stopped
     environment:
       - NODE_ENV=production
+      # Database Configuration
       - VITE_DB_CLIENT=${VITE_DB_CLIENT:-mysql}
       - VITE_DB_HOST=${DB_HOST:-db}
       - VITE_DB_PORT=${DB_PORT:-3306}
       - VITE_DB_USER=${DB_USER:-jboilerplate}
       - VITE_DB_PASSWORD=${DB_PASSWORD:-jboilerplate}
       - VITE_DB_NAME=${DB_NAME:-jboilerplate}
+      - VITE_DB_SSL=${VITE_DB_SSL:-false}
+      # API Configuration
+      - VITE_API_URL=${VITE_API_URL:-}
+      - VITE_API_TIMEOUT=${VITE_API_TIMEOUT:-30000}
+      # Feature Flags
+      - VITE_FEATURE_DARK_MODE=${VITE_FEATURE_DARK_MODE:-true}
+      - VITE_FEATURE_MULTILINGUAL_SUPPORT=${VITE_FEATURE_MULTILINGUAL_SUPPORT:-true}
+      - VITE_FEATURE_NOTIFICATIONS=${VITE_FEATURE_NOTIFICATIONS:-true}
+      - VITE_FEATURE_ANALYTICS=${VITE_FEATURE_ANALYTICS:-false}
+      - VITE_FEATURE_ADMIN_DASHBOARD=${VITE_FEATURE_ADMIN_DASHBOARD:-true}
+      - VITE_FEATURE_USER_MANAGEMENT=${VITE_FEATURE_USER_MANAGEMENT:-true}
+      - VITE_FEATURE_EMAIL_SERVICE=${VITE_FEATURE_EMAIL_SERVICE:-false}
     ports:
       - "${WEB_PORT:-3100}:80"
     volumes:
-      - ./logs:/app/logs
+      - app_logs:/app/logs
     depends_on:
       db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      test: ["CMD", "curl", "-f", "http://localhost/"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -53,4 +67,6 @@ services:
 
 volumes:
   mysql_data:
+    driver: local
+  app_logs:
     driver: local 
