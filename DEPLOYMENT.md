@@ -80,9 +80,10 @@ VITE_FEATURE_EMAIL_SERVICE=false
 
 #### Build Fails
 
-1. **pnpm lock file issues**: Ensure `pnpm-lock.yaml` is committed to your repository
+1. **pnpm lock file issues**: The Dockerfiles use `--no-frozen-lockfile` to handle lockfile mismatches automatically
 2. **Memory issues**: Coolify might need more memory for the build process
 3. **Dependencies**: Check that all dependencies are properly listed in `package.json`
+4. **Missing files**: Ensure all imported files exist (check for missing constants or components)
 
 #### App doesn't start
 

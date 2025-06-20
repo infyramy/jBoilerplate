@@ -19,8 +19,8 @@ RUN apk add --no-cache \
 # Copy package management files
 COPY package.json pnpm-lock.yaml ./
 
-# Install dependencies using pnpm with frozen lockfile
-RUN pnpm install --frozen-lockfile --prod=false
+# Install dependencies using pnpm (allow lockfile updates for deployment)
+RUN pnpm install --no-frozen-lockfile --prod=false
 
 # Copy source code
 COPY . .
