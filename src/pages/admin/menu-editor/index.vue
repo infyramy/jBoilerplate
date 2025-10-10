@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'vue-sonner';
 import {
   GripVertical, Edit, Save, X, Plus, Folder, FileText,
@@ -45,6 +46,11 @@ const navigationStore = useNavigationStore();
 const selectedRole = ref('admin');
 const roles = ['admin', 'user'];
 
+// Loading states
+const isLoadingPages = ref(true);
+const isLoadingMenu = ref(true);
+const isLoading = computed(() => isLoadingPages.value || isLoadingMenu.value);
+
 // All menu items (categories + items)
 const menuStructure = ref<any[]>([]);
 
@@ -77,6 +83,7 @@ const dynamicPages = ref<any[]>([]);
 const pageEditorPages = ref<Set<string>>(new Set());
 
 async function loadDynamicPages() {
+  isLoadingPages.value = true;
   try {
     // First, load pages created by Page Editor from database
     const pagesRes = await fetch('/api/pages');
@@ -133,10 +140,13 @@ async function loadDynamicPages() {
     console.log('Page Editor created pages:', Array.from(pageEditorPages.value));
   } catch (e) {
     console.error('Failed to load dynamic pages:', e);
+  } finally {
+    isLoadingPages.value = false;
   }
 }
 
 async function loadMenuStructure() {
+  isLoadingMenu.value = true;
   try {
     // Load from database
     const res = await fetch(`/api/menu-structure?role=${selectedRole.value}`);
@@ -202,6 +212,8 @@ async function loadMenuStructure() {
   } catch (e) {
     console.error('Failed to load menu structure:', e);
     toast.error('Failed to load menu structure');
+  } finally {
+    isLoadingMenu.value = false;
   }
 }
 
@@ -464,7 +476,12 @@ onMounted(async () => {
           <CardDescription>Drag to add to menu</CardDescription>
         </CardHeader>
         <CardContent>
-          <div class="space-y-2">
+          <!-- Loading Skeleton -->
+          <div v-if="isLoading" class="space-y-2">
+            <Skeleton v-for="i in 5" :key="i" class="h-14 w-full" />
+          </div>
+
+          <div v-else class="space-y-2">
             <div
               v-for="item in availableItems"
               :key="item.id"
@@ -496,14 +513,26 @@ onMounted(async () => {
               <CardTitle class="text-lg">{{ selectedRole }} Menu</CardTitle>
               <CardDescription>Categories and navigation items</CardDescription>
             </div>
-            <Button @click="addCategory" size="sm" variant="outline">
+            <Button @click="addCategory" size="sm" variant="outline" :disabled="isLoading">
               <Plus class="h-4 w-4 mr-2" />
               Add Category
             </Button>
           </div>
         </CardHeader>
         <CardContent>
-          <div class="space-y-4">
+          <!-- Loading Skeleton -->
+          <div v-if="isLoading" class="space-y-4">
+            <div v-for="i in 2" :key="i" class="border rounded-lg overflow-hidden">
+              <div class="bg-muted/30 p-3 border-b">
+                <Skeleton class="h-6 w-32" />
+              </div>
+              <div class="p-2 space-y-2">
+                <Skeleton v-for="j in 3" :key="j" class="h-12 w-full" />
+              </div>
+            </div>
+          </div>
+
+          <div v-else class="space-y-4">
             <div
               v-for="(category, catIndex) in menuStructure"
               :key="category.id"
