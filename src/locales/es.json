@@ -1,0 +1,65 @@
+{
+  "common": {
+    "welcome": "Bienvenido",
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "create": "Crear",
+    "actions": "Acciones",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "close": "Cerrar",
+    "open": "Abrir",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "logout": "Cerrar sesión",
+    "login": "Iniciar sesión",
+    "register": "Registrarse",
+    "profile": "Perfil",
+    "settings": "Configuración",
+    "home": "Inicio",
+    "dashboard": "Panel",
+    "yes": "Sí",
+    "no": "No",
+    "language": "Idioma"
+  },
+  "auth": {
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "confirmPassword": "Confirmar contraseña",
+    "forgotPassword": "¿Olvidó la contraseña?",
+    "resetPassword": "Restablecer contraseña",
+    "signIn": "Iniciar sesión",
+    "signUp": "Registrarse",
+    "rememberMe": "Recordarme",
+    "loginSuccessful": "Inicio de sesión exitoso",
+    "logoutSuccessful": "Cierre de sesión exitoso",
+    "incorrectCredentials": "Correo electrónico o contraseña incorrectos",
+    "accountCreated": "Cuenta creada con éxito"
+  },
+  "validation": {
+    "required": "{field} es obligatorio",
+    "email": "Por favor, ingrese una dirección de correo electrónico válida",
+    "minLength": "{field} debe tener al menos {min} caracteres",
+    "maxLength": "{field} no debe exceder los {max} caracteres",
+    "passwordMatch": "Las contraseñas no coinciden",
+    "invalidFormat": "Formato de {field} inválido"
+  },
+  "notifications": {
+    "newMessage": "Tienes un nuevo mensaje",
+    "newNotification": "Tienes una nueva notificación"
+  },
+  "errors": {
+    "somethingWentWrong": "Algo salió mal",
+    "pageNotFound": "Página no encontrada",
+    "serverError": "Error del servidor",
+    "unauthorized": "No autorizado",
+    "forbidden": "Prohibido",
+    "offline": "Estás desconectado"
+  }
+} 

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Debug Console</title>
+  <style>
+    body {
+      font-family: monospace;
+      padding: 20px;
+      background: #1e1e1e;
+      color: #d4d4d4;
+    }
+    h1 { color: #4ec9b0; }
+    button {
+      padding: 10px 20px;
+      margin: 10px 5px;
+      background: #0e639c;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover { background: #1177bb; }
+    #output {
+      background: #252526;
+      padding: 15px;
+      border-radius: 4px;
+      margin-top: 20px;
+      white-space: pre-wrap;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+    .error { color: #f48771; }
+    .success { color: #4ec9b0; }
+    .info { color: #569cd6; }
+  </style>
+</head>
+<body>
+  <h1>🔧 Debug Console</h1>
+
+  <div>
+    <button onclick="checkLocalStorage()">Check localStorage</button>
+    <button onclick="clearSetupCache()">Clear Setup Cache</button>
+    <button onclick="setSetupComplete()">Set Setup Complete</button>
+    <button onclick="checkAPIs()">Test API Endpoints</button>
+    <button onclick="testNavigation()">Test Navigation</button>
+    <button onclick="clearAll()">Clear All & Reload</button>
+  </div>
+
+  <div id="output"></div>
+
+  <script>
+    const output = document.getElementById('output');
+
+    function log(message, type = 'info') {
+      const timestamp = new Date().toLocaleTimeString();
+      const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+      output.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+      output.scrollTop = output.scrollHeight;
+    }
+
+    function checkLocalStorage() {
+      output.innerHTML = '';
+      log('=== LocalStorage Contents ===', 'info');
+
+      const keys = Object.keys(localStorage);
+      if (keys.length === 0) {
+        log('localStorage is empty', 'info');
+      } else {
+        keys.forEach(key => {
+          const value = localStorage.getItem(key);
+          try {
+            const parsed = JSON.parse(value);
+            log(`${key}: ${JSON.stringify(parsed, null, 2)}`, 'info');
+          } catch {
+            log(`${key}: ${value}`, 'info');
+          }
+        });
+      }
+    }
+
+    function clearSetupCache() {
+      localStorage.removeItem('setup_status_cache');
+      localStorage.removeItem('jboilerplate_setup_complete');
+      log('✓ Setup cache cleared', 'success');
+      checkLocalStorage();
+    }
+
+    function setSetupComplete() {
+      localStorage.setItem('jboilerplate_setup_complete', 'true');
+      localStorage.setItem('setup_status_cache', JSON.stringify({
+        initialized: true,
+        timestamp: Date.now()
+      }));
+      log('✓ Setup marked as complete', 'success');
+      checkLocalStorage();
+    }
+
+    async function checkAPIs() {
+      output.innerHTML = '';
+      log('=== Testing API Endpoints ===', 'info');
+
+      // Test setup status
+      try {
+        const setupRes = await fetch('/api/setup/status');
+        const setupData = await setupRes.json();
+        log(`✓ /api/setup/status: ${JSON.stringify(setupData, null, 2)}`, 'success');
+      } catch (error) {
+        log(`✗ /api/setup/status: ${error.message}`, 'error');
+      }
+
+      // Test system config
+      try {
+        const configRes = await fetch('/api/system-config/load-db');
+        const configData = await configRes.json();
+        log(`✓ /api/system-config/load-db: success=${configData.success}`, configData.success ? 'success' : 'error');
+      } catch (error) {
+        log(`✗ /api/system-config/load-db: ${error.message}`, 'error');
+      }
+
+      // Test database connection
+      try {
+        const dbRes = await fetch('/api/database/test-connection');
+        const dbData = await dbRes.json();
+        log(`✓ /api/database/test-connection: ${JSON.stringify(dbData, null, 2)}`, 'success');
+      } catch (error) {
+        log(`✗ /api/database/test-connection: ${error.message}`, 'error');
+      }
+    }
+
+    function testNavigation() {
+      output.innerHTML = '';
+      log('=== Testing Navigation ===', 'info');
+      log(`Current URL: ${window.location.href}`, 'info');
+      log(`Current Path: ${window.location.pathname}`, 'info');
+
+      const paths = ['/', '/login', '/get-started', '/admin/home'];
+      paths.forEach(path => {
+        const url = window.location.origin + path;
+        log(`\nClick to test: <a href="${url}" target="_blank" style="color: #4ec9b0;">${path}</a>`, 'info');
+      });
+    }
+
+    function clearAll() {
+      if (confirm('Clear all localStorage and reload?')) {
+        localStorage.clear();
+        log('✓ All localStorage cleared. Reloading...', 'success');
+        setTimeout(() => window.location.reload(), 1000);
+      }
+    }
+
+    // Auto-run on load
+    window.onload = () => {
+      log('Debug console loaded', 'success');
+      checkLocalStorage();
+    };
+  </script>
+</body>
+</html>

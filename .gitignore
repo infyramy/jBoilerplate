@@ -1,0 +1,111 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+.yarn/
+.npm/
+.pnp.*
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+
+# Build output
+dist/
+dist-ssr/
+*.local
+
+# Cache directories
+.cache/
+.vite/
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.sublime-workspace
+*.sublime-project
+
+# System files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.cursor/
+.claude/
+
+# Test coverage
+coverage/
+*.lcov
+.nyc_output/
+
+# User uploads (NOT in version control)
+public/uploads/*
+!public/uploads/.gitkeep
+
+# Auto-generated files (regenerated from database)
+public/config/generated-routes.json
+
+# Backup files
+package.json.backup
+*.backup
+*.bak
+*.swp
+*~
+
+# Database files
+*.sqlite
+*.sqlite3
+*.db
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# PWA / Service Worker
+**/sw.js
+**/workbox-*.js
+dev-dist/
+
+# Generated documentation (auto-generated, can be ignored)
+**/api-docs/
+**/typedoc/
+**/.docusaurus/
+
+# Temporary folders
+tools/
+.vscode-test/
+
+# Old documentation files (kept for reference)
+SuperAdmin-Implementation-Plan.md
+SuperAdmin-Technical-Implementation.md
+SuperAdmin-UI-Component-Design.md
+MOBILE_RESPONSIVE_AUDIT.md
+REFACTORING_SUMMARY.md
+
+# Development notes (optional - comment out if you want to track these)
+docs/prompt/

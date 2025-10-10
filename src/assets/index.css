@@ -1,0 +1,465 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+  
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+  
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+  
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+  
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+  
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+  
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+  
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 98%;
+    
+    --warning: 38 92% 50%;
+    --warning-foreground: 48 96% 89%;
+  
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
+    
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    
+    --radius: 0.5rem;
+    
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+  
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+  
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+  
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+  
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+  
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+  
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+  
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    
+    --success: 142 69% 29%;
+    --success-foreground: 0 0% 98%;
+    
+    --warning: 48 96% 89%;
+    --warning-foreground: 38 92% 50%;
+  
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+    
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+    
+    --sidebar-background: 240 10% 3.9%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 0 0% 98%;
+    --sidebar-primary-foreground: 240 5.9% 10%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 240 4.9% 83.9%;
+    
+    --animate-accordion-down: accordion-down 0.2s ease-out;
+    --animate-accordion-up: accordion-up 0.2s ease-out;
+    --animate-fade-in: fade-in 0.2s ease-out;
+    --animate-fade-out: fade-out 0.2s ease-in;
+    --animate-slide-in-from-top: slide-in-from-top 0.2s ease-out;
+    --animate-slide-in-from-bottom: slide-in-from-bottom 0.2s ease-out;
+    --animate-slide-in-from-left: slide-in-from-left 0.2s ease-out;
+    --animate-slide-in-from-right: slide-in-from-right 0.2s ease-out;
+  }
+  
+  [data-color-scheme="claude"] {
+    --background: 37.5000 40.0000% 96.0784%;
+    --foreground: 47.5000 23.5294% 20%;
+    --card: 48 33.3333% 97.0588%;
+    --card-foreground: 60 1.9608% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 52 22.3881% 13.1373%;
+    --primary: 35 68.0412% 38.0392%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 48.0000 26.3158% 88.8235%;
+    --secondary-foreground: 52.0000 9.8039% 30%;
+    --muted: 45.8824 33.3333% 90%;
+    --muted-foreground: 45.0000 3.1496% 50.1961%;
+    --accent: 48.7500 28.5714% 89.0196%;
+    --accent-foreground: 52 22.3881% 13.1373%;
+    --destructive: 60 1.9608% 10%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 43.6364 18.0328% 88.0392%;
+    --input: 26.6667 17.6471% 90.0000%;
+    --ring: 35.0254 89.9543% 57.0588%;
+    --chart-1: 18.1579 67.8571% 43.9216%;
+    --chart-2: 44.5313 100% 74.9020%;
+    --chart-3: 162.8571 30.4348% 81.9608%;
+    --chart-4: 257.1429 59.3220% 88.4314%;
+    --chart-5: 43.9752 71.5556% 44.1176%;
+    --sidebar-background: 37.5000 40.0000% 96.0784%;
+    --sidebar-foreground: 60 2.5210% 23.3333%;
+    --sidebar-primary: 15.2795 66.2551% 52.3529%;
+    --sidebar-primary-foreground: 0 0% 98.4314%;
+    --sidebar-accent: 48.0000 26.3158% 88.8235%;
+    --sidebar-accent-foreground: 0 0% 20.3922%;
+    --sidebar-border: 0 0% 92.1569%;
+    --sidebar-ring: 0 0% 70.9804%;
+  }
+
+  [data-color-scheme="claude"].dark {
+    --background: 60 2.7027% 14.5098%;
+    --foreground: 48.0000 11.2782% 73.9216%;
+    --card: 60 2.7027% 14.5098%;
+    --card-foreground: 48 33.3333% 97.0588%;
+    --popover: 60 2.1277% 18.4314%;
+    --popover-foreground: 60 5.4545% 89.2157%;
+    --primary: 14.8052 74.7573% 59.6078%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 48 33.3333% 97.0588%;
+    --secondary-foreground: 60 2.1277% 18.4314%;
+    --muted: 60 3.8462% 10.1961%;
+    --muted-foreground: 52.5000 10.1266% 69.0196%;
+    --accent: 42.8571 13.7255% 10%;
+    --accent-foreground: 46.6667 33.3333% 94.7059%;
+    --destructive: 0 100% 60.1961%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 60 6.7797% 23.1373%;
+    --input: 54.0000 6.4103% 30.5882%;
+    --ring: 210 88.9764% 49.8039%;
+    --chart-1: 18.1579 67.8571% 43.9216%;
+    --chart-2: 251.5385 100% 74.5098%;
+    --chart-3: 42.8571 13.7255% 10%;
+    --chart-4: 248.5714 30.4348% 22.5490%;
+    --chart-5: 17.8882 71.5556% 44.1176%;
+    --sidebar-background: 30 3.3333% 11.7647%;
+    --sidebar-foreground: 48.0000 11.2782% 73.9216%;
+    --sidebar-primary: 0 0% 20.3922%;
+    --sidebar-primary-foreground: 0 0% 98.4314%;
+    --sidebar-accent: 60 5.8824% 10%;
+    --sidebar-accent-foreground: 48.0000 11.2782% 73.9216%;
+    --sidebar-border: 0 0% 92.1569%;
+    --sidebar-ring: 0 0% 70.9804%;
+  }
+
+  [data-color-scheme="starbucks"] {
+    --background: 0 0% 100%;
+    --foreground: 162 27.78% 36.08%;
+    --card: 170 0% 97.61%;
+    --card-foreground: 162 15% 40%;
+    --popover: 162 2.5% 96%;
+    --popover-foreground: 162 15% 40%;
+    --primary: 162 27.78% 36.08%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 174 5.56% 92%;
+    --secondary-foreground: 162 15% 40%;
+    --muted: 174 4.44% 93.83%;
+    --muted-foreground: 162 8.33% 44%;
+    --accent: 174 5.56% 92%;
+    --accent-foreground: 162 15% 40%;
+    --destructive: 192 42.86% 40%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 174 5.56% 93.51%;
+    --input: 174 5.56% 86.98%;
+    --ring: 162 8.33% 65%;
+    --chart-1: 162 14.39% 81.11%;
+    --chart-2: 159 31.58% 56.08%;
+    --chart-3: 162 36.11% 43.53%;
+    --chart-4: 162 34.48% 33.53%;
+    --chart-5: 0 0% 0%;
+    --sidebar-background: 175 9.84% 27.65%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 162 27.78% 36.08%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 175 9.84% 20.78%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 162 2.22% 90%;
+    --sidebar-ring: 162 8.33% 65%;
+    --radius: 1rem;
+  }
+
+  [data-color-scheme="starbucks"].dark {
+    --background: 162 1.39% 17.45%;
+    --foreground: 162 2.78% 95.32%;
+    --card: 162 2.78% 22.35%;
+    --card-foreground: 162 2.78% 85%;
+    --popover: 162 2.78% 22.35%;
+    --popover-foreground: 162 2.78% 85%;
+    --primary: 162 27.78% 36.08%;
+    --primary-foreground: 162 8.33% 98%;
+    --secondary: 162 4.17% 27.25%;
+    --secondary-foreground: 162 2.78% 85%;
+    --muted: 162 4.17% 27.25%;
+    --muted-foreground: 162 5.56% 65.19%;
+    --accent: 162 4.17% 27.25%;
+    --accent-foreground: 162 2.78% 85%;
+    --destructive: 192 42.86% 25%;
+    --destructive-foreground: 162 2.78% 85%;
+    --border: 162 2.22% 28.62%;
+    --input: 162 2.22% 26.51%;
+    --ring: 162 11.11% 46%;
+    --chart-1: 159 31.58% 44.71%;
+    --chart-2: 89 1.94% 95.53%;
+    --chart-3: 162 27.78% 36.08%;
+    --chart-4: 162 34.48% 25.69%;
+    --chart-5: 162 42.86% 23.73%;
+    --sidebar: 162 2.78% 22.35%;
+    --sidebar-foreground: 162 2.78% 85%;
+    --sidebar-primary: 162 27.78% 36.08%;
+    --sidebar-primary-foreground: 162 2.78% 85%;
+    --sidebar-accent: 162 4.17% 27.25%;
+    --sidebar-accent-foreground: 162 2.78% 85%;
+    --sidebar-border: 162 2.22% 25.49%;
+    --sidebar-ring: 162 11.11% 46%;
+    --radius: 1rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  :root {
+    --vis-tooltip-background-color: none !important;
+    --vis-tooltip-border-color: none !important;
+    --vis-tooltip-text-color: none !important;
+    --vis-tooltip-shadow-color: none !important;
+    --vis-tooltip-backdrop-filter: none !important;
+    --vis-tooltip-padding: none !important;
+
+    --vis-primary-color: var(--primary);
+    --vis-secondary-color: 160 81% 40%;
+    --vis-text-color: var(--muted-foreground);
+  }
+
+  /* Starbucks theme typography */
+  [data-color-scheme="starbucks"] body {
+    font-family: 'Work Sans', system-ui, sans-serif;
+    font-weight: 400;
+    letter-spacing: normal;
+  }
+
+  [data-color-scheme="starbucks"] h1,
+  [data-color-scheme="starbucks"] h2,
+  [data-color-scheme="starbucks"] h3,
+  [data-color-scheme="starbucks"] h4,
+  [data-color-scheme="starbucks"] h5,
+  [data-color-scheme="starbucks"] h6 {
+    font-family: 'Host Grotesk', system-ui, sans-serif;
+    font-weight: 600;
+  }
+
+  [data-color-scheme="starbucks"] code,
+  [data-color-scheme="starbucks"] pre {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 400;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Animation keyframes */
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--accordion-height, auto);
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    height: var(--accordion-height, auto);
+  }
+  to {
+    height: 0;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes slide-in-from-top {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-from-bottom {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-from-left {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-from-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Apply the animations to the utility classes */
+.animate-accordion-down {
+  animation: accordion-down 0.2s ease-out;
+}
+
+.animate-accordion-up {
+  animation: accordion-up 0.2s ease-out;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+.animate-fade-out {
+  animation: fade-out 0.2s ease-in;
+}
+
+.animate-slide-in-from-top {
+  animation: slide-in-from-top 0.2s ease-out;
+}
+
+.animate-slide-in-from-bottom {
+  animation: slide-in-from-bottom 0.2s ease-out;
+}
+
+.animate-slide-in-from-left {
+  animation: slide-in-from-left 0.2s ease-out;
+}
+
+.animate-slide-in-from-right {
+  animation: slide-in-from-right 0.2s ease-out;
+}
+
+/* Kibo UI Theme Variables */
+:root {
+  --kibo-primary: hsl(240, 5.9%, 10%);
+  --kibo-secondary: hsl(240, 4.8%, 95.9%);
+  --kibo-accent: hsl(240, 4.8%, 95.9%);
+  --kibo-success: hsl(142, 76%, 36%);
+  --kibo-warning: hsl(38, 92%, 50%);
+  --kibo-error: hsl(0, 84.2%, 60.2%);
+  --kibo-info: hsl(199, 89%, 48%);
+  --kibo-background: hsl(0, 0%, 100%);
+  --kibo-foreground: hsl(240, 10%, 3.9%);
+  --kibo-muted: hsl(240, 4.8%, 95.9%);
+  --kibo-border: hsl(240, 5.9%, 90%);
+  --kibo-radius: 0.5rem;
+  --kibo-duration: 300ms;
+  --kibo-easing: ease-in-out;
+}
+
+.dark {
+  --kibo-primary: hsl(0, 0%, 98%);
+  --kibo-secondary: hsl(240, 3.7%, 15.9%);
+  --kibo-accent: hsl(240, 3.7%, 15.9%);
+  --kibo-success: hsl(142, 69%, 29%);
+  --kibo-warning: hsl(48, 96%, 89%);
+  --kibo-error: hsl(0, 62.8%, 30.6%);
+  --kibo-info: hsl(199, 89%, 48%);
+  --kibo-background: hsl(240, 10%, 3.9%);
+  --kibo-foreground: hsl(0, 0%, 98%);
+  --kibo-muted: hsl(240, 3.7%, 15.9%);
+  --kibo-border: hsl(240, 3.7%, 15.9%);
+}
+
+/* Global mobile overflow fix */
+@layer base {
+  html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  * {
+    min-width: 0;
+  }
+}

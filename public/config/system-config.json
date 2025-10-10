@@ -1,0 +1,12 @@
+{
+  "systemName": "LogoIpsum",
+  "logoLight": "/uploads/logoipsum-342 (1)-1759509756807.png",
+  "logoDark": "/uploads/logoipsum-342-1759509752938.png",
+  "loginImage": "/uploads/nathan-dumlao-lvWw_G8tKsk-unsplash-1759509769537.jpg",
+  "loginTitle": "Welcome Back",
+  "loginDescription": "Sign in to your account to continue",
+  "loginLogoMode": "theme",
+  "loginLogoSize": "large",
+  "loginLogoCustomSize": 200,
+  "configSource": "file"
+}
