@@ -1,25 +1,40 @@
 # jBoilerplate
 
-A modern Vue 3 boilerplate with TypeScript, Shadcn UI, and flexible database options.
+A modern, production-ready Vue 3 boilerplate with TypeScript, Shadcn UI, and enterprise-grade features for building scalable web applications.
 
-## Features
+## ✨ Features
 
-- 🚀 [Vue 3](https://v3.vuejs.org/) with [Composition API](https://v3.vuejs.org/guide/composition-api-introduction.html)
-- 🔥 [TypeScript](https://www.typescriptlang.org/) for type safety
-- 🎨 [Shadcn UI](https://ui.shadcn.com/) with customizable components
-- 📦 [Pinia](https://pinia.vuejs.org/) for state management
-- 🔄 [Vue Router](https://router.vuejs.org/) with route guards
-- 🌐 [Vue I18n](https://vue-i18n.intlify.dev/) for internationalization
-- 🔍 [Knex.js](https://knexjs.org/) for database access
-- 🎭 Dark mode with system preference detection
-- 🚦 Form validation with Vuelidate
-- 📱 Responsive design
-- 📈 Dashboard components and layouts
-- 🛠️ Admin and SuperAdmin interfaces
-- ⚡ Vite for lightning-fast development
-- 🗄️ Flexible database options (MySQL, PostgreSQL, SQLite)
-- 🐳 Docker deployment options
-- 🛠️ CLI for easy setup
+### Core Stack
+- 🚀 **[Vue 3](https://v3.vuejs.org/)** - Composition API with `<script setup>`
+- 🔥 **[TypeScript](https://www.typescriptlang.org/)** - Full type safety
+- ⚡ **[Vite](https://vitejs.dev/)** - Lightning-fast HMR and builds
+- 🎨 **[Shadcn UI](https://ui.shadcn.com/)** - Beautiful, accessible components
+- 🎯 **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first styling
+
+### State & Routing
+- 📦 **[Pinia](https://pinia.vuejs.org/)** - Intuitive state management
+- 🔄 **[Vue Router](https://router.vuejs.org/)** - Dynamic routing with guards
+- 🌐 **[Vue I18n](https://vue-i18n.intlify.dev/)** - Internationalization
+
+### Database & Backend
+- 🗄️ **[Knex.js](https://knexjs.org/)** - SQL query builder
+- 🔌 **Flexible Database** - MySQL, PostgreSQL, SQLite support
+- 🔐 **Authentication & Authorization** - Built-in user management
+- 📊 **Database Migrations & Seeds** - Version-controlled schema
+
+### UI & UX
+- 🎭 **Dark Mode** - System preference detection
+- 📱 **Responsive Design** - Mobile-first approach
+- 🚦 **Form Validation** - Vuelidate integration
+- 📈 **Dashboard Components** - Pre-built admin layouts
+- 🎪 **Animations** - Smooth transitions with VueUse Motion
+
+### Developer Experience
+- 🐳 **Docker Ready** - Multi-environment deployment
+- 🛠️ **Admin & SuperAdmin** - Role-based interfaces
+- 🧪 **Testing Setup** - Vitest configuration
+- 📝 **TypeScript Types** - Comprehensive type definitions
+- 🔧 **ESLint & Prettier** - Code quality tools
 
 ## Prerequisites
 
@@ -179,6 +194,18 @@ jBoilerplate/
 └── vite.config.mts      # Vite configuration
 ```
 
-## License
+## 🤝 Contributing
 
-MIT
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📄 License
+
+MIT License - feel free to use this boilerplate for your projects!
+
+## 🙏 Acknowledgments
+
+Built with modern web technologies and best practices for the Vue.js ecosystem.
+
+---
+
+**Made with ❤️ for the Vue.js community**
