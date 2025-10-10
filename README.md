@@ -40,157 +40,136 @@ A modern, production-ready Vue 3 boilerplate with TypeScript, Shadcn UI, and ent
 
 - Node.js 16+
 - pnpm 8+
-- Docker and Docker Compose (for containerized deployment)
+- MySQL, PostgreSQL, or SQLite database
 
 ## Quick Start
 
-### Using the CLI (Recommended)
-
-The jBoilerplate CLI makes it easy to set up your project with your preferred database configuration:
+### 1. Clone the Repository
 
 ```bash
-# Install dependencies
+git clone https://github.com/infyramy/jBoilerplate.git
+cd jBoilerplate
+```
+
+### 2. Install Dependencies
+
+```bash
 pnpm install
-
-# Run the setup CLI
-pnpm run cli:setup
 ```
 
-The CLI will guide you through configuring your application with the following options:
+### 3. Configure Environment
 
-1. **Full stack deployment** - Includes a MySQL database container
-2. **App-only deployment** - Connect to your own external database
+Create a `.env` file from the example:
 
-### Manual Setup
+```bash
+cp .env.example .env
+```
 
-#### Option 1: Full Stack Deployment (with built-in database)
-
-1. Create a `.env` file with database credentials:
+Edit `.env` with your database credentials:
 
 ```env
-# Docker settings
-DB_CLIENT=mysql
-DB_HOST=db
-DB_PORT=3306
-DB_USER=jboilerplate
-DB_PASSWORD=jboilerplate
-DB_NAME=jboilerplate
-DB_ROOT_PASSWORD=rootpassword
+# Database Configuration
+DB_CLIENT=mysql2                    # or 'pg' for PostgreSQL, 'sqlite3' for SQLite
+DB_HOST=your_database_host
+DB_PORT=3306                        # 5432 for PostgreSQL
+DB_USER=your_database_user
+DB_PASSWORD=your_database_password
+DB_NAME=your_database_name
 
-# App settings
-VITE_DB_CLIENT=mysql
-VITE_DB_HOST=db
+# Frontend Environment Variables
+VITE_DB_CLIENT=mysql                # or 'pg', 'sqlite3'
+VITE_DB_HOST=your_database_host
 VITE_DB_PORT=3306
-VITE_DB_USER=jboilerplate
-VITE_DB_PASSWORD=jboilerplate
-VITE_DB_NAME=jboilerplate
+VITE_DB_USER=your_database_user
+VITE_DB_PASSWORD=your_database_password
+VITE_DB_NAME=your_database_name
 ```
 
-2. Start the application with database:
+### 4. Run Database Migrations
 
 ```bash
-# Start with database
-pnpm run docker:full
-```
-
-#### Option 2: App-Only Deployment (connect to external database)
-
-1. Create a `.env` file with your external database credentials:
-
-```env
-# App settings
-VITE_DB_CLIENT=mysql  # or pg for PostgreSQL, sqlite3 for SQLite
-VITE_DB_HOST=your-db-host
-VITE_DB_PORT=3306     # or 5432 for PostgreSQL
-VITE_DB_USER=your-username
-VITE_DB_PASSWORD=your-password
-VITE_DB_NAME=your-database
-```
-
-2. Start the application only:
-
-```bash
-# Start application only
-pnpm run docker:app-only
-```
-
-## Database Migrations
-
-Run migrations to set up your database schema:
-
-```bash
-# Create a new migration
-pnpm run migrate:make migration_name
-
-# Run migrations
+# Run migrations to create database tables
 pnpm run migrate:latest
 
-# Rollback migrations
-pnpm run migrate:rollback
-
-# Create a seed file
-pnpm run seed:make seed_name
-
-# Run seeds
+# (Optional) Seed the database with sample data
 pnpm run seed:run
 ```
 
-## Development
+### 5. Start Development Server
 
 ```bash
-# Start development server
 pnpm run dev
+```
 
-# Build for production
-pnpm run build
+The application will be available at `http://localhost:5173`
 
-# Run tests
-pnpm run test
+## Available Scripts
+
+### Development
+```bash
+pnpm run dev          # Start development server
+pnpm run build        # Build for production (with type checking)
+pnpm run build:only   # Build without type checking
+pnpm run preview      # Preview production build
+pnpm run lint         # Run ESLint
+pnpm run test         # Run tests
+pnpm run test:watch   # Run tests in watch mode
+```
+
+### Database Commands
+```bash
+pnpm run migrate:make <name>   # Create a new migration file
+pnpm run migrate:latest        # Run all pending migrations
+pnpm run migrate:rollback      # Rollback the last migration
+pnpm run seed:make <name>      # Create a new seed file
+pnpm run seed:run              # Run all seed files
 ```
 
 ## Environment Variables
 
-| Variable | Description | Default |
+| Variable | Description | Example |
 |----------|-------------|---------|
-| `VITE_DB_CLIENT` | Database client (mysql, pg, sqlite3) | mysql |
-| `VITE_DB_HOST` | Database host | localhost |
-| `VITE_DB_PORT` | Database port | 3306 |
-| `VITE_DB_USER` | Database username | jboilerplate |
-| `VITE_DB_PASSWORD` | Database password | jboilerplate |
-| `VITE_DB_NAME` | Database name | jboilerplate |
-| `VITE_DB_SSL` | Enable SSL for database connection | false |
+| `DB_CLIENT` | Database client (mysql2, pg, sqlite3) | mysql2 |
+| `DB_HOST` | Database host | localhost |
+| `DB_PORT` | Database port | 3306 |
+| `DB_USER` | Database username | your_user |
+| `DB_PASSWORD` | Database password | your_password |
+| `DB_NAME` | Database name | your_database |
+| `VITE_DB_CLIENT` | Frontend database client | mysql |
+| `VITE_DB_HOST` | Frontend database host | localhost |
+| `VITE_DB_PORT` | Frontend database port | 3306 |
+| `VITE_DB_USER` | Frontend database username | your_user |
+| `VITE_DB_PASSWORD` | Frontend database password | your_password |
+| `VITE_DB_NAME` | Frontend database name | your_database |
 
 ## Project Structure
 
 ```
 jBoilerplate/
-├── cli/                   # CLI tool for project setup
 ├── migrations/            # Database migrations
 ├── public/               # Static assets
 ├── seeds/                # Database seed files
+├── scripts/              # Utility scripts
 ├── src/
-│   ├── assets/           # Application assets
+│   ├── assets/           # Application assets (CSS, images)
 │   ├── components/       # Vue components
 │   │   └── ui/           # Shadcn UI components
-│   ├── composables/      # Vue composables
-│   ├── constants/        # Application constants
-│   ├── layouts/          # Page layouts
+│   ├── composables/      # Vue composables (hooks)
+│   ├── layouts/          # Page layouts (auth, admin, dashboard)
 │   ├── lib/              # Utilities and libraries
 │   │   └── db/           # Database integration
 │   ├── locales/          # I18n translation files
 │   ├── pages/            # Application pages
 │   │   ├── admin/        # Admin pages
-│   │   └── superadmin/   # SuperAdmin pages
+│   │   └── user/         # User pages
 │   ├── plugins/          # Vue plugins
 │   ├── router/           # Vue Router configuration
-│   ├── services/         # API and other services
+│   ├── services/         # API and service layer
 │   ├── stores/           # Pinia stores
 │   └── types/            # TypeScript type definitions
-├── templates/            # Project templates
 ├── components.json       # Shadcn UI configuration
-├── docker-compose.yml    # Full stack Docker configuration
-├── docker-compose.app-only.yml # App-only Docker configuration
 ├── knexfile.js          # Knex.js configuration
+├── tailwind.config.js   # Tailwind CSS configuration
 └── vite.config.mts      # Vite configuration
 ```
 
